@@ -49,14 +49,14 @@ def parse_json(j):
 
     	return data
 
-def process_file(filename):
+def process_file(filename,conn):
 	s = filename.split('/')[-1].split("-")	
         
 	artist=s[0]
 	song = ""
 	print "Artist: " + s[0]
 	if len(s) > 1:
-		song = s[1]
+		song = s[1].split(".")[0]
 		print "Song: " 	 + s[1]
 		
 	c=codegen(filename)
@@ -72,18 +72,24 @@ def process_file(filename):
 	fp.ingest(code, do_commit=False)
     	fp.commit()
 
-	import MySQLdb
-	conn = MySQLdb.connect(host= "localhost",user="root", passwd="123", db="pymusic",charset='utf8')
-	x = conn.cursor()
+	db = conn.cursor()
 
 	try:
-	   x.execute("""INSERT INTO melody(track_id,artist,song) VALUES (%s,%s,%s)""",(track_id,artist,song))
+	   db.execute("""INSERT INTO melody(track_id,artist,song) VALUES (%s,%s,%s)""",(track_id,artist,song))
 	   conn.commit()
 	except:
 	   conn.rollback()
 
-	conn.close()	
 
 if __name__ == "__main__":
-    for filename in glob('/home/ulan/Music/Testmp3/mp3/*.mp3'):
-       process_file(filename)
+	import MySQLdb
+	conn = MySQLdb.connect(host= "localhost",user="root", passwd="123", db="pymusic",charset='utf8')
+
+    	for filename in glob('/home/ulan/Music/Testmp3/mp3/*.mp3'):
+       		process_file(filename,conn)
+	
+	for filename in glob('/home/ulan/Music/Testmp3/mp3/*.wav'):
+       		process_file(filename,conn)
+
+	conn.close()	
+	
