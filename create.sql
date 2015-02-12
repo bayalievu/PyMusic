@@ -18,7 +18,7 @@ ON melody(song);
 CREATE TABLE played_melody
 (
 id int NOT NULL AUTO_INCREMENT,
-track_id varchar(255) unique,
+track_id varchar(255),
 melody_id int,
 radio varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci,
 time_played datetime,

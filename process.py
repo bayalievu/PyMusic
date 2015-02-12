@@ -97,10 +97,14 @@ if __name__ == "__main__":
 	import MySQLdb
 	conn = MySQLdb.connect(host= "localhost",user="root", passwd="123", db="pymusic",charset='utf8')
 
-    	for filename in glob('/home/ulan/Music/Testmp3/mp3/*.mp3'):
+	files = glob('/home/ulan/Music/Testmp3/mp3/*.mp3')
+	files.sort()
+    	for filename in files:
        		process_file(filename,conn)
 	
-	for filename in glob('/home/ulan/Music/Testmp3/mp3/*.wav'):
+	files = glob('/home/ulan/Music/Testmp3/mp3/*.wav')
+	files.sort()
+	for filename in files:
        		process_file(filename,conn)
 
 	conn.close()	

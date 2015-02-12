@@ -5,6 +5,7 @@ if __name__ == "__main__":
         db = conn.cursor()
         try:
            db.execute("""delete from melody""")
+           db.execute("""delete from played_melody""")
            conn.commit()
         except db.Error, e:
            print "Error %d: %s" % (e.args[0],e.args[1])
