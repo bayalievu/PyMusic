@@ -2,6 +2,7 @@
 import sys
 import os
 import subprocess
+from transliterate import translit
 from glob import glob
 try:
     import json
@@ -13,8 +14,8 @@ import fp
 
 codegen_path = os.path.abspath("/home/ulan/echoprint-codegen/echoprint-codegen")
 
-def codegen(file, start=0, duration=30):
-    proclist = [codegen_path, os.path.abspath(file), "%d" % start, "%d" % duration]
+def codegen(file):
+    proclist = [codegen_path, os.path.abspath(file)]
     p = subprocess.Popen(proclist, stdout=subprocess.PIPE)
     code = p.communicate()[0]
     return json.loads(code)
@@ -50,15 +51,25 @@ def parse_json(j):
     	return data
 
 def process_file(filename,conn):
-	s = filename.split('/')[-1].split("-")	
-        
+	cyrillic_filename = filename
+	#Convert latin to to cyrillic
+	try:
+    		filename.decode('ascii')
+	except UnicodeDecodeError:
+		cyrillic_filename = filename
+	else:
+		cyrillic_filename = translit(filename,'ru')
+		
+	
+	s = cyrillic_filename.split('/')[-1].split("-")	
 	artist=s[0]
 	song = ""
+        print filename 
 	print "Artist: " + s[0]
 	if len(s) > 1:
 		song = s[1].split(".")[0]
-		print "Song: " 	 + s[1]
-		
+		print "Song: " 	 + song
+	
 	c=codegen(filename)
 	if c is None:
 		raise Exception("No code is generate for "+ filename) 
@@ -69,17 +80,18 @@ def process_file(filename,conn):
 	
 	track_id =code["track_id"]
         
+	
 	fp.ingest(code, do_commit=False)
     	fp.commit()
 
 	db = conn.cursor()
-
 	try:
-	   db.execute("""INSERT INTO melody(track_id,artist,song) VALUES (%s,%s,%s)""",(track_id,artist,song))
+	   db.execute("""INSERT INTO melody(track_id,artist,song,filename) VALUES (%s,%s,%s,%s)""",(track_id,artist,song,filename))
 	   conn.commit()
-	except:
+	except db.Error, e:
+           print "Error %d: %s" % (e.args[0],e.args[1])
 	   conn.rollback()
-
+	
 
 if __name__ == "__main__":
 	import MySQLdb
