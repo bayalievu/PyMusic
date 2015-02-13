@@ -1,4 +1,5 @@
 
+import MySQLdb
 import sys
 import os
 import subprocess
@@ -50,7 +51,7 @@ def parse_json(j):
 
     	return data
 
-def process_file(filename,conn):
+def process_file(filename,conn,logfile):
 	cyrillic_filename = filename
 	#Convert latin to to cyrillic
 	try:
@@ -64,19 +65,17 @@ def process_file(filename,conn):
 	s = cyrillic_filename.split('/')[-1].split("-")	
 	artist=s[0]
 	song = ""
-        print filename 
-	print "Artist: " + s[0]
+        logfile.write(filename+'\n')
+	print filename
 	if len(s) > 1:
 		song = s[1].split(".")[0]
-		print "Song: " 	 + song
 	
 	c=codegen(filename)
-	if c is None:
-		raise Exception("No code is generate for "+ filename) 
 	
 	code = parse_json(c)
 	if code is None:
-		raise Exception("parse_json returned None")
+		logfile.write("No code is generated for: " + filename+'\n')
+		return
 	
 	track_id =code["track_id"]
         
@@ -87,25 +86,28 @@ def process_file(filename,conn):
 	db = conn.cursor()
 	try:
 	   db.execute("""INSERT INTO melody(track_id,artist,song,filename) VALUES (%s,%s,%s,%s)""",(track_id,artist,song,filename))
+	   logfile.write("Inserted track to database "+track_id+'\n')
 	   conn.commit()
 	except db.Error, e:
-           print "Error %d: %s" % (e.args[0],e.args[1])
+           logfile.write("Error %d: %s" % (e.args[0],e.args[1]))
 	   conn.rollback()
 	
 
 if __name__ == "__main__":
-	import MySQLdb
 	conn = MySQLdb.connect(host= "localhost",user="root", passwd="123", db="pymusic",charset='utf8')
+	
+	# Open logfile
+	logfile = open('logfile', 'w')
 
-	files = glob('/home/ulan/Music/Testmp3/mp3/*.mp3')
+	files = glob('/home/ulan/Music/radio_songs/*.mp3')
 	files.sort()
     	for filename in files:
-       		process_file(filename,conn)
+       		process_file(filename,conn,logfile)
 	
 	files = glob('/home/ulan/Music/Testmp3/mp3/*.wav')
 	files.sort()
 	for filename in files:
-       		process_file(filename,conn)
+       		process_file(filename,conn,logfile)
 
 	conn.close()	
-	
+	logfile.close()
