@@ -64,27 +64,31 @@ def process_file(filename,conn):
 if __name__ == "__main__":
 	conn = MySQLdb.connect(host= "localhost",user="root", passwd="123", db="pymusic",charset='utf8')
 
-	
-	segment = AudioSegment.from_mp3("/home/ulan/Music/test3.mp3")
+	import alsaaudio, wave, numpy
 
-	# pydub does things in miliseconds
-	ten_minutes = 0.5 * 60 * 1000
-	one_minute = 1 * 60 * 1000
-	half_minute = 30 * 1000
+	inp = alsaaudio.PCM(alsaaudio.PCM_CAPTURE)
+	inp.setchannels(2)
+	inp.setrate(44100)
+	inp.setformat(alsaaudio.PCM_FORMAT_S16_LE)
+	inp.setperiodsize(1024)
 
-	length = len(segment)
+	j=0
+	while True:
+		filename = 'test'+str(j)+'.wav'	
+		w = wave.open(filename, 'w')
+		w.setnchannels(2)
+		w.setsampwidth(2)
+		w.setframerate(44100)
+		#Record 30 seconds and recognize
+    		for i in range(int(30*44.1)):
+			l, data = inp.read()
+    			a = numpy.fromstring(data, dtype='int16')
+    			w.writeframes(data)
+		process_file(filename,conn)	
+		os.remove(filename)
+		j = j+1
 
-	ten_parts = length/ten_minutes
 
-	for i in range(ten_parts):
-		part = segment[i*ten_minutes:(i+1)*ten_minutes]
-		part.export("/home/ulan/PyMusic/mp3/"+"%09d"%i+".mp3", format="mp3",bitrate="128k")
-    	
-
-	# Process files sorted by modified time
-	files = sorted(glob('/home/ulan/PyMusic/mp3/*.mp3')) 
-	print "Number of files: "+ str(len(files))
-	for filename in files:
-       		process_file(filename,conn)
-	
 	conn.close()	
+
+
