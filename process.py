@@ -104,10 +104,12 @@ if __name__ == "__main__":
     	for filename in files:
        		process_file(filename,conn,logfile)
 	
+	'''
 	files = glob('/home/ulan/Music/Testmp3/mp3/*.wav')
 	files.sort()
 	for filename in files:
        		process_file(filename,conn,logfile)
+	'''
 
 	conn.close()	
 	logfile.close()

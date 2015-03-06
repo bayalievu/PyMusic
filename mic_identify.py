@@ -34,16 +34,15 @@ def process_file(filename,conn):
         	result = fp.best_match_for_query(decoded)
         	if result.TRID:
 			track_id = result.TRID
+			print track_id
+		else:
+			print "No match found for the file"
+			return
+		
     	else:
         	print "Couldn't decode", file
 		return
 
-	if track_id is None:
-		print "No match found for the file"
-		return
-	else:
-		print track_id
-	
 	#Insert tracks only once
 	if len(identified) == 0 or identified[-1] != track_id:
 		identified.append(track_id)
