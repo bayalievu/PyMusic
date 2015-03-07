@@ -15,6 +15,8 @@ import fp
 
 codegen_path = os.path.abspath("/home/ulan/echoprint-codegen/echoprint-codegen")
 
+melodies = []
+
 def codegen(file):
     proclist = [codegen_path, os.path.abspath(file)]
     p = subprocess.Popen(proclist, stdout=subprocess.PIPE)
@@ -63,53 +65,70 @@ def process_file(filename,conn,logfile):
 		
 	
 	s = cyrillic_filename.split('/')[-1].split("-")	
-	artist=s[0]
+	artist=s[0].strip()
 	song = ""
         logfile.write(filename+'\n')
-	print filename
 	if len(s) > 1:
-		song = s[1].split(".")[0]
+		song = s[1].split(".")[0].strip()
+
+	x =  artist+"-"+song	
+	if not x.decode("utf-8") in melodies:
+	#Add the song if it does not exist in database
+		c=codegen(filename)
 	
-	c=codegen(filename)
+		code = parse_json(c)
+		if code is None:
+			logfile.write("No code is generated for: " + filename+'\n')
+			return
 	
-	code = parse_json(c)
-	if code is None:
-		logfile.write("No code is generated for: " + filename+'\n')
-		return
-	
-	track_id =code["track_id"]
+		track_id =code["track_id"]
         
 	
-	fp.ingest(code, do_commit=False)
-    	fp.commit()
+		fp.ingest(code, do_commit=False)
+    		fp.commit()
 
-	db = conn.cursor()
-	try:
-	   db.execute("""INSERT INTO melody(track_id,artist,song,filename) VALUES (%s,%s,%s,%s)""",(track_id,artist,song,filename))
-	   logfile.write("Inserted track to database "+track_id+'\n')
-	   conn.commit()
-	except db.Error, e:
-           logfile.write("Error %d: %s" % (e.args[0],e.args[1]))
-	   conn.rollback()
+		db = conn.cursor()
+		try:
+	   		db.execute("""INSERT INTO melody(track_id,artist,song,filename) VALUES (%s,%s,%s,%s)""",(track_id,artist,song,filename))
+	   		logfile.write("Inserted track to database "+track_id+'\n')
+	   		conn.commit()
+		except db.Error, e:
+           		logfile.write("Error %d: %s" % (e.args[0],e.args[1]))
+	   		conn.rollback()
+	else:
+		logfile.write(x+" is already in the database\n")
+
+def getMelodies(conn):
+	cursor = conn.cursor()
+
+	sql = "SELECT * FROM melody"
 	
+	try:
+		cursor.execute(sql)
+	   	# Fetch all the rows in a list of lists.
+	   	results = cursor.fetchall()
+	   	for row in results:
+	      		a = row[2].strip()
+	      		s = row[3].strip()
+			melodies.append(a+"-"+s)
+	except:
+   		print "Error: unable to fecth data"
 
+	
 if __name__ == "__main__":
 	conn = MySQLdb.connect(host= "localhost",user="root", passwd="123", db="pymusic",charset='utf8')
-	
+	getMelodies(conn)
+
+		
 	# Open logfile
 	logfile = open('logfile', 'w')
-
-	files = glob('/home/ulan/Music/radio_songs/*.mp3')
+	
+	
+	files = glob('/home/ulan/Music/try/*.mp3')
 	files.sort()
     	for filename in files:
        		process_file(filename,conn,logfile)
 	
-	'''
-	files = glob('/home/ulan/Music/Testmp3/mp3/*.wav')
-	files.sort()
-	for filename in files:
-       		process_file(filename,conn,logfile)
-	'''
 
 	conn.close()	
 	logfile.close()
