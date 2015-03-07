@@ -118,13 +118,18 @@ def getMelodies(conn):
 if __name__ == "__main__":
 	conn = MySQLdb.connect(host= "localhost",user="root", passwd="123", db="pymusic",charset='utf8')
 	getMelodies(conn)
+	
+	if len(sys.argv) < 2:
+        	print "Usage: python process.py mp3path"
+                exit()
 
-		
+        mp3path = sys.argv[1]
+	
 	# Open logfile
 	logfile = open('logfile', 'w')
 	
 	
-	files = glob('/home/ulan/Music/try/*.mp3')
+	files = glob(mp3path)
 	files.sort()
     	for filename in files:
        		process_file(filename,conn,logfile)
