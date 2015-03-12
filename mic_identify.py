@@ -3,11 +3,12 @@ import sys
 sys.path.insert(0, "/home/ulan/echoprint-server/API")
 import MySQLdb
 import os
-import subprocess
+import subprocess32
 import time    
 from glob import glob
 import fp
 
+last=0
 codegen_path = os.path.abspath("/home/ulan/echoprint-codegen/echoprint-codegen")
 
 try:
@@ -16,53 +17,56 @@ except ImportError:
     import simplejson as json
 
 
-#list of identified songs
-identified = []
-
 def codegen(file, start=0, duration=30):
     	proclist = [codegen_path, os.path.abspath(file), "%d" % start, "%d" % duration]
-    	p = subprocess.Popen(proclist, stdout=subprocess.PIPE)                      
-    	code = p.communicate()[0]                                                   
+    	p = subprocess32.Popen(proclist, stdout=subprocess32.PIPE)                      
+    	r = p.communicate()
+	code = r[0]      
     	return json.loads(code)
 
-def process_file(filename,conn):
-	print filename,
-    	codes = codegen(filename)
+def process_file(filename,radio):
+	now_time = time.strftime('%H:%M:%S')
+	now_date = time.strftime('%Y-%m-%d')
+	db = conn.cursor()
+    	
+	codes = codegen(filename)
 	track_id = None
     	if len(codes) and "code" in codes[0]:
         	decoded = fp.decode_code_string(codes[0]["code"])
         	result = fp.best_match_for_query(decoded)
         	if result.TRID:
 			track_id = result.TRID
-			print track_id
 		else:
-			print "No match found for the file"
-			return
+			#Insert melody to unknown fingerprints table with status 'N'
+			logfile.write("No match found for the file, inserting unknown melody to fingerprint table")
+                        db.execute("""INSERT INTO fingerprint(fp,radio,date_played,time_played,time_identified,status) VALUES (%s,%s,%s,%s,%s,%s)""",(decoded,radio,now_date,now_time,None,'N'))
+                        conn.commit()			
+			return -1
 		
     	else:
-        	print "Couldn't decode", file
-		return
-
-	#Insert tracks only once
-	if len(identified) == 0 or identified[-1] != track_id:
-		identified.append(track_id)
-		now = time.strftime('%Y-%m-%d %H:%M:%S')
+        	logfile.write("Couldn't decode "+file+'\n')
+		return -2
 	
-		db = conn.cursor()
+	global last
+	#Insert tracks only once
+	if (last == 0) or (last != track_id):
+		last=track_id
 
 		try:
-	   		print "Inserting track_id: " + track_id	+ " for file: " + filename
-	   		db.execute("""INSERT INTO played_melody(track_id,melody_id,radio,time_played) VALUES (%s,%s,%s,%s)""",(track_id,None,"Min-Kiyal",now))
+	   		logfile.write("Inserting track_id: " + track_id	+ " for file: " + filename+'\n')
+	   		db.execute("""INSERT INTO played_melody(track_id,radio,date_played,time_played) VALUES (%s,%s,%s,%s)""",(track_id,radio,now_date,now_time))
 	   		conn.commit()
 		except db.Error, e:
-           		print "Error %d: %s" % (e.args[0],e.args[1])
+           		logfile.write("Error %d: %s\n" % (e.args[0],e.args[1]))
 	   		conn.rollback()
 	else:
-		print "Track is already recognized from other file"
+		logfile.write("Track is already recognized from other file "+filename+'\n')
+	
+	return 0
 
 if __name__ == "__main__":
 	conn = MySQLdb.connect(host= "localhost",user="root", passwd="123", db="pymusic",charset='utf8')
-
+	radio = "Min-Kiyal"
 	import alsaaudio, wave, numpy
 
 	inp = alsaaudio.PCM(alsaaudio.PCM_CAPTURE)
@@ -71,9 +75,11 @@ if __name__ == "__main__":
 	inp.setformat(alsaaudio.PCM_FORMAT_S16_LE)
 	inp.setperiodsize(1024)
 
-	j=0
+	logfile = open('logfileMicIdentify', 'w')
+        last_result = -1	
 	while True:
-		filename = 'test'+str(j)+'.wav'	
+		now = time.strftime('%Y-%m-%d %H:%M:%S')
+		filename = 'wavs/mic'+now+'.wav'	
 		w = wave.open(filename, 'w')
 		w.setnchannels(2)
 		w.setsampwidth(2)
@@ -83,11 +89,14 @@ if __name__ == "__main__":
 			l, data = inp.read()
     			a = numpy.fromstring(data, dtype='int16')
     			w.writeframes(data)
-		process_file(filename,conn)	
-		os.remove(filename)
-		j = j+1
+		w.close()
 
+		result = process_file(filename,radio) 
+		if result == 0 or last_result == 0:
+			os.remove(filename)
+		last_result = result
 
+	logfile.close()
 	conn.close()	
 
 

@@ -52,7 +52,7 @@ def process_file(filename,conn):
 
 		try:
 	   		print "Inserting track_id: " + track_id	+ " for file: " + filename
-	   		db.execute("""INSERT INTO played_melody(track_id,melody_id,radio,time_played) VALUES (%s,%s,%s,%s)""",(track_id,None,"Min-Kiyal",now))
+	   		db.execute("""INSERT INTO played_melody(track_id,radio,time_played) VALUES (%s,%s,%s)""",(track_id,"Min-Kiyal",now))
 	   		conn.commit()
 		except db.Error, e:
            		print "Error %d: %s" % (e.args[0],e.args[1])
