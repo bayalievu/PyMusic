@@ -6,6 +6,9 @@ if __name__ == "__main__":
         try:
            db.execute("""delete from melody""")
            db.execute("""delete from played_melody""")
+           db.execute("""delete from artist""")
+           db.execute("""delete from artist_melody""")
+		
            conn.commit()
         except db.Error, e:
            print "Error %d: %s" % (e.args[0],e.args[1])

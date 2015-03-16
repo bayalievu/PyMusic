@@ -70,3 +70,11 @@ ON fingerprint(time_played);
 CREATE INDEX fp_date_played_index
 ON fingerprint(date_played);
 
+CREATE TABLE artist_melody
+(
+id int NOT NULL AUTO_INCREMENT,
+artist_id int REFERENCES artist(id),
+melody_id int REFERENCES melody(id),
+PRIMARY KEY (id)
+);
+

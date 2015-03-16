@@ -3,96 +3,108 @@ import sys
 sys.path.insert(0, "/home/ulan/echoprint-server/API")
 import MySQLdb
 import os
-import subprocess
+import subprocess32
 import time    
 from glob import glob
 import fp
 
+last=0
 codegen_path = os.path.abspath("/home/ulan/echoprint-codegen/echoprint-codegen")
 
-try:
-    import json
-except ImportError:
-    import simplejson as json
+import simplejson as json
 
-
-#last identified song
-last_track = None
 
 def codegen(file, start=0, duration=30):
     	proclist = [codegen_path, os.path.abspath(file), "%d" % start, "%d" % duration]
-    	p = subprocess.Popen(proclist, stdout=subprocess.PIPE)                      
-    	code = p.communicate()[0]                                                   
+    	p = subprocess32.Popen(proclist, stdout=subprocess32.PIPE)                      
+    	r = p.communicate()
+	code = r[0]      
     	return json.loads(code)
 
-def process_file(filename,conn):
-	print filename,
-    	codes = codegen(filename)
+def process_file(filename,radio):
+	now_time = time.strftime('%H:%M:%S')
+	now_date = time.strftime('%Y-%m-%d')
+	db = conn.cursor()
+    	
+	codes = codegen(filename)
 	track_id = None
-    	if len(codes) and "code" in codes[0]:
+    	if len(codes)>0 and "code" in codes[0]:
         	decoded = fp.decode_code_string(codes[0]["code"])
         	result = fp.best_match_for_query(decoded)
         	if result.TRID:
 			track_id = result.TRID
-			print track_id
 		else:
-			print "No match found for the file"
-			return
+			#Insert melody to unknown fingerprints table with status 'N'
+			logfile.write("No match found for the file, inserting unknown melody to fingerprint table"+'\n')
+                        db.execute("""INSERT INTO fingerprint(fp,radio,date_played,time_played,time_identified,status) VALUES (%s,%s,%s,%s,%s,%s)""",(decoded,radio,now_date,now_time,None,'N'))
+                        conn.commit()		
+			db.close()	
+			return -1
 		
     	else:
-        	print "Couldn't decode", file
-		return
-
-	#Insert tracks only once
-	if last_track is None or last_track != track_id:
-		last_track =  track_id
-		now = time.strftime('%Y-%m-%d %H:%M:%S')
+        	logfile.write("Couldn't decode "+filename+'\n')
+		db.close()
+		return -2
 	
-		db = conn.cursor()
+	global last
+	#Insert tracks only once
+	if (last == 0) or (last != track_id):
+		last=track_id
 
 		try:
-	   		print "Inserting track_id: " + track_id	+ " for file: " + filename
-	   		db.execute("""INSERT INTO played_melody(track_id,radio,time_played) VALUES (%s,%s,%s)""",(track_id,"Min-Kiyal",now))
+	   		logfile.write("Inserting track_id: " + track_id	+ " for file: " + filename+'\n')
+	   		db.execute("""INSERT INTO played_melody(track_id,radio,date_played,time_played) VALUES (%s,%s,%s,%s)""",(track_id,radio,now_date,now_time))
 	   		conn.commit()
 		except db.Error, e:
-           		print "Error %d: %s" % (e.args[0],e.args[1])
+           		logfile.write("Error %d: %s\n" % (e.args[0],e.args[1]))
 	   		conn.rollback()
 	else:
-		print "Track is already recognized from other file"
+		logfile.write("Track is already recognized from other file "+filename+'\n')
+	
+	db.close()
+	
+	return 0
 
 if __name__ == "__main__":
-	
-        if len(sys.argv) < 3:
+ 	import urllib2
+        from datetime import datetime
+        from datetime import timedelta
+       
+	if len(sys.argv) < 3:
                 print "Usage: python stream_identify.py radio stream"
                 exit()
 
         radio = sys.argv[1]
         stream = sys.argv[2]
 
-	conn = MySQLdb.connect(host= "localhost",user="root", passwd="123", db="pymusic",charset='utf8')
-	import urllib2
-	from datetime import datetime
-	from datetime import timedelta
+   	url=urllib2.urlopen(stream)
+        conn = MySQLdb.connect(host= "192.168.3.111",user="root", passwd="123", db="pymusic",charset='utf8')
+        
 
+	logfile = open('logfileMicIdentify'+radio+time.strftime('%Y-%m-%d %H:%M:%S'), 'w')
+        last_result = -1	
 	while True:
-		now = time.strftime('%Y-%m-%d %H:%M:%S')
-		filename = radio+now+'.mp3'
-		f=file(filename, 'wb')
-		url=urllib2.urlopen(stream)
+	        now = time.strftime('%Y-%m-%d %H:%M:%S')
+                filename = "wavs/"+radio+now+'.mp3'
+                f=file(filename, 'wb')
 
-		# Basically a timer
-		t_start = datetime.now()
-		t_end = datetime.now()
-		t_end_old = t_end
+                # Basically a timer
+                t_start = datetime.now()
+                t_end = datetime.now()
+                t_end_old = t_end
 
-		# Record in chunks until
-		while t_end-t_start < timedelta(seconds=30):
-    			f.write(url.read(1024))
-    			t_end = datetime.now()
-		
-		process_file(filename,conn)	
+                # Record in chunks until
+                while t_end-t_start < timedelta(seconds=30):
+                        f.write(url.read(1024))
+                        t_end = datetime.now()
+                f.close()
 
+		result = process_file(filename,radio) 
+		if result == 0 or last_result == 0:
+			os.remove(filename)
+		last_result = result
 
+	logfile.close()
 	conn.close()	
-
+	url.close()
 

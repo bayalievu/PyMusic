@@ -2,32 +2,26 @@
 import MySQLdb
 import sys
 import os
-import subprocess
+import subprocess32
 from transliterate import translit
 from glob import glob
-try:
-    import json
-except ImportError:
-    import simplejson as json
+import simplejson as json
 
 sys.path.insert(0, "/home/ulan/echoprint-server/API")
 import fp
 
 codegen_path = os.path.abspath("/home/ulan/echoprint-codegen/echoprint-codegen")
 
-melodies = []
+artists = {}
 
 def codegen(file):
     proclist = [codegen_path, os.path.abspath(file)]
-    p = subprocess.Popen(proclist, stdout=subprocess.PIPE)
+    p = subprocess32.Popen(proclist, stdout=subprocess32.PIPE)
     code = p.communicate()[0]
     return json.loads(code)
 
-def parse_json(j):
-	c = j[0]
+def parse_json(c):
 
-        if "code" not in c:
-            return None
         code = c["code"]
         m = c["metadata"]
         if "track_id" in m:
@@ -53,7 +47,7 @@ def parse_json(j):
 
     	return data
 
-def process_file(filename,conn,logfile):
+def process_file(filename,c):
 	cyrillic_filename = filename
 	#Convert latin to to cyrillic
 	try:
@@ -71,69 +65,112 @@ def process_file(filename,conn,logfile):
 	if len(s) > 1:
 		song = s[1].split(".")[0].strip()
 
-	x =  artist+"-"+song	
-	if not x.decode("utf-8") in melodies:
-	#Add the song if it does not exist in database
-		c=codegen(filename)
+	artists_id=addArtistToDb(artist)
 	
-		code = parse_json(c)
-		if code is None:
-			logfile.write("No code is generated for: " + filename+'\n')
-			return
+	code = parse_json(c[0])	
+	track_id =code["track_id"]
 	
-		track_id =code["track_id"]
-        
-	
-		fp.ingest(code, do_commit=False)
-    		fp.commit()
+	fp.ingest(code, do_commit=False)
+    	fp.commit()
 
-		db = conn.cursor()
-		try:
-	   		db.execute("""INSERT INTO melody(track_id,artist,song,filename) VALUES (%s,%s,%s,%s)""",(track_id,artist,song,filename))
-	   		logfile.write("Inserted track to database "+track_id+'\n')
-	   		conn.commit()
-		except db.Error, e:
-           		logfile.write("Error %d: %s" % (e.args[0],e.args[1]))
-	   		conn.rollback()
-	else:
-		logfile.write(x+" is already in the database\n")
-
-def getMelodies(conn):
-	cursor = conn.cursor()
-
-	sql = "SELECT * FROM melody"
-	
+	db = conn.cursor()
 	try:
-		cursor.execute(sql)
-	   	# Fetch all the rows in a list of lists.
-	   	results = cursor.fetchall()
-	   	for row in results:
-	      		a = row[2].strip()
-	      		s = row[3].strip()
-			melodies.append(a+"-"+s)
-	except:
-   		print "Error: unable to fecth data"
+	   	db.execute("""INSERT INTO melody(track_id,artist,song,filename) VALUES (%s,%s,%s,%s)""",(track_id,artist,song,filename))
+	   	logfile.write("Inserted track to database "+track_id+'\n')
+	   	conn.commit()
+		insertArtistMelodyLink(artists_id,db.lastrowid)
+	except db.Error, e:
+           	logfile.write("Error %d: %s" % (e.args[0],e.args[1]))
+	   	conn.rollback()
+	
+	db.close()
+
+def insertArtistMelodyLink(artists_id,melody_id):
+	db = conn.cursor()
+	for a in artists_id:
+                try:
+                        db.execute("""INSERT INTO artist_melody(artist_id,melody_id) VALUES (%s,%s)""",(a,melody_id))
+                        logfile.write("Inserted artist_melody link "+str(a)+""+str(melody_id)+'\n')
+                        conn.commit()
+                except db.Error, e:
+                        logfile.write("Error %d: %s" % (e.args[0],e.args[1]))
+                        conn.rollback()
+	db.close()
+
+
+def addArtistToDb(artist):
+	db = conn.cursor()
+	a = artist.split('_')
+	ids=[]
+	for x in a:
+		s = x.strip().decode("utf-8")	
+		if not s in artists.keys():
+                	try:
+                        	db.execute("""INSERT INTO artist(name) VALUES (%s)""",(s,))
+                        	logfile.write("Inserted artist to database "+x+'\n')
+                        	conn.commit()
+				artist_id = db.lastrowid
+				artists[s]=artist_id
+				ids.append(artist_id)
+                	except db.Error, e:
+                        	logfile.write("Error %d: %s" % (e.args[0],e.args[1]))
+                        	conn.rollback()
+		else:
+			ids.append(artists[s])	
+	db.close()
+	return ids
+
+def getArtists():
+        db = conn.cursor()
+
+        sql = "SELECT * FROM artist"
+
+        try:
+                db.execute(sql)
+                # Fetch all the rows in a list of lists.
+                results = db.fetchall()
+                for row in results:
+			i = row[0]
+                        a = row[1].strip()
+                        artists[a]=i
+	except db.Error, e:
+        	logfile.write("Error %d: %s" % (e.args[0],e.args[1]))
+	
+	db.close()
+
+def melodyExists(filename,c):
+	decoded = fp.decode_code_string(c[0]["code"])
+        result = fp.best_match_for_query(decoded)
+        if result.TRID:
+		logfile.write(filename+" is already in the database\n")
+        	return True
+	else:
+		return False
 
 	
 if __name__ == "__main__":
-	conn = MySQLdb.connect(host= "localhost",user="root", passwd="123", db="pymusic",charset='utf8')
-	getMelodies(conn)
-	
 	if len(sys.argv) < 2:
         	print "Usage: python process.py mp3path"
                 exit()
 
+	conn = MySQLdb.connect(host= "localhost",user="root", passwd="123", db="pymusic",charset='utf8')
+	getArtists()
+	
         mp3path = sys.argv[1]
 	
 	# Open logfile
-	logfile = open('logfile', 'w')
-	
+	logfile = open('logfileProcess', 'w')
 	
 	files = glob(mp3path)
 	files.sort()
     	for filename in files:
-       		process_file(filename,conn,logfile)
-	
+		c=codegen(filename)
+        	if c is None or len(c)==0 or "code" not in c[0]:
+			logfile.write("No code is generated for: " + filename+'\n')
+			continue
+ 
+		if not melodyExists(filename,c):
+       			process_file(filename,c)
 
 	conn.close()	
 	logfile.close()

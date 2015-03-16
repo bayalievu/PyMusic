@@ -11,10 +11,7 @@ import fp
 last=0
 codegen_path = os.path.abspath("/home/ulan/echoprint-codegen/echoprint-codegen")
 
-try:
-    import json
-except ImportError:
-    import simplejson as json
+import simplejson as json
 
 
 def codegen(file, start=0, duration=30):
@@ -31,7 +28,7 @@ def process_file(filename,radio):
     	
 	codes = codegen(filename)
 	track_id = None
-    	if len(codes) and "code" in codes[0]:
+    	if len(codes)>0 and "code" in codes[0]:
         	decoded = fp.decode_code_string(codes[0]["code"])
         	result = fp.best_match_for_query(decoded)
         	if result.TRID:
@@ -40,11 +37,13 @@ def process_file(filename,radio):
 			#Insert melody to unknown fingerprints table with status 'N'
 			logfile.write("No match found for the file, inserting unknown melody to fingerprint table")
                         db.execute("""INSERT INTO fingerprint(fp,radio,date_played,time_played,time_identified,status) VALUES (%s,%s,%s,%s,%s,%s)""",(decoded,radio,now_date,now_time,None,'N'))
-                        conn.commit()			
+                        conn.commit()		
+			db.close()	
 			return -1
 		
     	else:
         	logfile.write("Couldn't decode "+file+'\n')
+		db.close()
 		return -2
 	
 	global last
@@ -62,11 +61,13 @@ def process_file(filename,radio):
 	else:
 		logfile.write("Track is already recognized from other file "+filename+'\n')
 	
+	db.close()
+	
 	return 0
 
 if __name__ == "__main__":
 	conn = MySQLdb.connect(host= "localhost",user="root", passwd="123", db="pymusic",charset='utf8')
-	radio = "Min-Kiyal"
+	radio = "KG Obondoru"
 	import alsaaudio, wave, numpy
 
 	inp = alsaaudio.PCM(alsaaudio.PCM_CAPTURE)
