@@ -12,22 +12,33 @@ last=0
 codegen_path = os.path.abspath("/home/ulan/echoprint-codegen/echoprint-codegen")
 
 import simplejson as json
+import simplejson.scanner
 
 
 def codegen(file, start=0, duration=30):
     	proclist = [codegen_path, os.path.abspath(file), "%d" % start, "%d" % duration]
     	p = subprocess32.Popen(proclist, stdout=subprocess32.PIPE)                      
     	r = p.communicate()
-	code = r[0]      
-    	return json.loads(code)
+	
+	try:
+		code = json.loads(r[0])
+	except simplejson.scanner.JSONDecodeError:
+		logfile.write("Json cannot be decoded "+str(r[0])+"\n")
+		return None
+    	
+	return code
 
 def process_file(filename,radio):
+
+	codes = codegen(filename)
+	if codes is None:
+		return -2
+
 	now_time = time.strftime('%H:%M:%S')
 	now_date = time.strftime('%Y-%m-%d')
-	db = conn.cursor()
-    	
-	codes = codegen(filename)
+	db = conn.cursor()    	
 	track_id = None
+	
     	if len(codes)>0 and "code" in codes[0]:
         	decoded = fp.decode_code_string(codes[0]["code"])
         	result = fp.best_match_for_query(decoded)
@@ -41,11 +52,6 @@ def process_file(filename,radio):
 			db.close()	
 			return -1
 		
-    	else:
-        	logfile.write("Couldn't decode "+filename+'\n')
-		db.close()
-		return -2
-	
 	global last
 	#Insert tracks only once
 	if (last == 0) or (last != track_id):
@@ -81,30 +87,35 @@ if __name__ == "__main__":
         conn = MySQLdb.connect(host= "192.168.3.111",user="root", passwd="123", db="pymusic",charset='utf8')
         
 
-	logfile = open('logfileMicIdentify'+radio+time.strftime('%Y-%m-%d %H:%M:%S'), 'w')
-        last_result = -1	
-	while True:
-	        now = time.strftime('%Y-%m-%d %H:%M:%S')
-                filename = "wavs/"+radio+now+'.mp3'
-                f=file(filename, 'wb')
+	logfile = open('logfileStreamIdentify'+radio+time.strftime('%Y-%m-%d %H:%M:%S'), 'w')
+        last_result = -1
+	try:	
+		while True:
+	        	now = time.strftime('%Y-%m-%d %H:%M:%S')
+                	filename = "wavs/"+radio+now+'.mp3'
+                	f=file(filename, 'wb')
 
-                # Basically a timer
-                t_start = datetime.now()
-                t_end = datetime.now()
-                t_end_old = t_end
+                	# Basically a timer
+                	t_start = datetime.now()
+                	t_end = datetime.now()
+                	t_end_old = t_end
 
-                # Record in chunks until
-                while t_end-t_start < timedelta(seconds=30):
-                        f.write(url.read(1024))
-                        t_end = datetime.now()
-                f.close()
+                	# Record in chunks until
+                	while t_end-t_start < timedelta(seconds=30):
+                        	f.write(url.read(1024))
+                        	t_end = datetime.now()
+                	f.close()
 
-		result = process_file(filename,radio) 
+			result = process_file(filename,radio) 
+			os.remove(filename)
+		'''
 		if result == 0 or last_result == 0:
 			os.remove(filename)
 		last_result = result
-
-	logfile.close()
-	conn.close()	
-	url.close()
-
+		'''
+	except KeyboardInterrupt:
+		logfile.close()
+		conn.close()	
+		url.close()
+		f.close()
+		exit()
