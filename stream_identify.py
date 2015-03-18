@@ -28,7 +28,7 @@ def codegen(file, start=0, duration=30):
     	
 	return code
 
-def process_file(filename,radio):
+def process_file(filename):
 
 	codes = codegen(filename)
 	if codes is None:
@@ -47,7 +47,7 @@ def process_file(filename,radio):
 		else:
 			#Insert melody to unknown fingerprints table with status 'N'
 			logfile.write("No match found for the file, inserting unknown melody to fingerprint table"+'\n')
-                        db.execute("""INSERT INTO fingerprint(fp,radio,date_played,time_played,time_identified,status) VALUES (%s,%s,%s,%s,%s,%s)""",(decoded,radio,now_date,now_time,None,'N'))
+                        db.execute("""INSERT INTO fingerprint(fp,radio,date_played,time_played,time_identified,status,radio_id,track_id) VALUES (%s,%s,%s,%s,%s,%s,%s,%s)""",(decoded,radio,now_date,now_time,None,'N',radio_id,None))
                         conn.commit()		
 			db.close()	
 			return -1
@@ -59,7 +59,7 @@ def process_file(filename,radio):
 
 		try:
 	   		logfile.write("Inserting track_id: " + track_id	+ " for file: " + filename+'\n')
-	   		db.execute("""INSERT INTO played_melody(track_id,radio,date_played,time_played) VALUES (%s,%s,%s,%s)""",(track_id,radio,now_date,now_time))
+	   		db.execute("""INSERT INTO played_melody(track_id,radio,date_played,time_played,radio_id) VALUES (%s,%s,%s,%s,%s)""",(track_id,radio,now_date,now_time,radio_id))
 	   		conn.commit()
 		except db.Error, e:
            		logfile.write("Error %d: %s\n" % (e.args[0],e.args[1]))
@@ -76,18 +76,19 @@ if __name__ == "__main__":
         from datetime import datetime
         from datetime import timedelta
        
-	if len(sys.argv) < 3:
-                print "Usage: python stream_identify.py radio stream"
+	if len(sys.argv) < 4:
+                print "Usage: python stream_identify.py radio radio_id stream"
                 exit()
 
         radio = sys.argv[1]
-        stream = sys.argv[2]
+	radio_id = sys.argv[2]
+        stream = sys.argv[3]
 
    	url=urllib2.urlopen(stream)
         conn = MySQLdb.connect(host= "192.168.3.111",user="root", passwd="123", db="pymusic",charset='utf8')
         
 
-	logfile = open('logfileStreamIdentify'+radio+time.strftime('%Y-%m-%d %H:%M:%S'), 'w')
+	logfile = open("logs/radio"+radio+"logStreamIdentify"+time.strftime('%Y-%m-%d %H:%M:%S'), 'w')
         last_result = -1
 	try:	
 		while True:
@@ -106,7 +107,7 @@ if __name__ == "__main__":
                         	t_end = datetime.now()
                 	f.close()
 
-			result = process_file(filename,radio) 
+			result = process_file(filename) 
 			os.remove(filename)
 		'''
 		if result == 0 or last_result == 0:

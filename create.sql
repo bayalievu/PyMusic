@@ -57,6 +57,8 @@ radio varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci,
 date_played date,
 time_played time,
 time_identified datetime,
+radio_id int,
+track_id varchar(255),
 status char(1),
 PRIMARY KEY (id)
 );
@@ -69,6 +71,12 @@ ON fingerprint(time_played);
 
 CREATE INDEX fp_date_played_index
 ON fingerprint(date_played);
+
+CREATE INDEX fp_radio_id_index
+ON fingerprint(radio_id);
+
+CREATE INDEX fp_track_id_index
+ON fingerprint(track_id);
 
 CREATE TABLE artist_melody
 (
