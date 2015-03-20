@@ -1,4 +1,3 @@
-from pydub import AudioSegment
 import sys
 sys.path.insert(0, "/home/ulan/echoprint-server/API")
 import MySQLdb
