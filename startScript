@@ -1,11 +1,11 @@
 
-exec ./startSolr.sh &
-exec ./startTtserver.sh &
-exec ./start1.sh &
-exec ./start2.sh &
-exec ./start3.sh &
-exec ./start4.sh &
-exec ./start5.sh &
-exec ./start6.sh &
-exec ./start7.sh &
-exec ./start8.sh &
+exec /home/monitor/Workspace/PyMusic/startSolr.sh &
+exec /home/monitor/Workspace/PyMusic/startTtserver.sh &
+exec /home/monitor/Workspace/PyMusic/start1.sh &
+exec /home/monitor/Workspace/PyMusic/start2.sh &
+exec /home/monitor/Workspace/PyMusic/start3.sh &
+exec /home/monitor/Workspace/PyMusic/start4.sh &
+exec /home/monitor/Workspace/PyMusic/start5.sh &
+exec /home/monitor/Workspace/PyMusic/start6.sh &
+exec /home/monitor/Workspace/PyMusic/start7.sh &
+exec /home/monitor/Workspace/PyMusic/start8.sh &

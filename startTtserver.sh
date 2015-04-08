@@ -1,1 +1,1 @@
-ttserver -host localhost -port 1978 /home/ulan/data.tch;
+ttserver -host localhost -port 1978 /home/monitor/Workspace/SongDataDontErase/data.tch;

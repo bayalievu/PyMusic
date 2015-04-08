@@ -92,7 +92,7 @@ if __name__ == "__main__":
    	url=urllib2.urlopen(stream)
         conn = MySQLdb.connect(host= "localhost",user="root", passwd="ulut123", db="pymusic",charset='utf8')
 
-	logfile = open("logs/radio"+radio+"logStreamIdentify"+time.strftime('%Y-%m-%d %H:%M:%S'), 'w')
+	logfile = open("/home/monitor/Worspace/PyMusic/logs/radio"+radio+"logStreamIdentify"+time.strftime('%Y-%m-%d %H:%M:%S'), 'w')
         last_result = -1
 	try:	
 		while True:
