@@ -7,10 +7,10 @@ from transliterate import translit
 from glob import glob
 import simplejson as json
 
-sys.path.insert(0, "/home/ulan/echoprint-server/API")
+sys.path.insert(0, "/home/monitor/Workspace/echoprint-server/API")
 import fp
 
-codegen_path = os.path.abspath("/home/ulan/echoprint-codegen/echoprint-codegen")
+codegen_path = os.path.abspath("/home/monitor/Workspace/echoprint-codegen/echoprint-codegen")
 
 artists = {}
 
@@ -153,7 +153,7 @@ if __name__ == "__main__":
         	print "Usage: python process.py mp3path"
                 exit()
 
-	conn = MySQLdb.connect(host= "localhost",user="root", passwd="123", db="pymusic",charset='utf8')
+	conn = MySQLdb.connect(host= "localhost",user="root", passwd="ulut123", db="pymusic",charset='utf8')
 	getArtists()
 	
         mp3path = sys.argv[1]

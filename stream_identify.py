@@ -1,5 +1,5 @@
 import sys
-sys.path.insert(0, "/home/ulan/echoprint-server/API")
+sys.path.insert(0, "/home/monitor/Workspace/echoprint-server/API")
 import MySQLdb
 import os
 import subprocess32
@@ -7,7 +7,7 @@ import time
 from glob import glob
 import fp
 
-codegen_path = os.path.abspath("/home/ulan/echoprint-codegen/echoprint-codegen")
+codegen_path = os.path.abspath("/home/monitor/Workspace/echoprint-codegen/echoprint-codegen")
 
 import simplejson as json
 import simplejson.scanner
@@ -90,7 +90,7 @@ if __name__ == "__main__":
         stream = sys.argv[3]
 
    	url=urllib2.urlopen(stream)
-        conn = MySQLdb.connect(host= "192.168.3.111",user="root", passwd="123", db="pymusic",charset='utf8')
+        conn = MySQLdb.connect(host= "localhost",user="root", passwd="ulut123", db="pymusic",charset='utf8')
 
 	logfile = open("logs/radio"+radio+"logStreamIdentify"+time.strftime('%Y-%m-%d %H:%M:%S'), 'w')
         last_result = -1
