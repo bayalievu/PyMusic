@@ -1,30 +1,11 @@
 
-
-java -Dsolr.solr.home=/home/monitor/Workspace/echoprint-server/solr/solr/solr/ -Djava.awt.headless=true -jar /home/monitor/Workspace/echoprint-server/solr/solr/start.jar
-
-ttserver -host localhost -port 1978 /home/monitor/Workspace/SongDataDontErase/data.tch
-
-source ~/v2.6/bin/activate;
-python /home/monitor/Workspace/PyMusic/stream_identify.py Obondoru 1  http://192.168.3.155:55655/stream1.mp3;
- 
-source ~/v2.6/bin/activate;
-python  /home/monitor/Workspace/PyMusic/stream_identify.py MinKiyal 2  http://192.168.3.155:55655/stream2.mp3;
- 
-source ~/v2.6/bin/activate;
-python  /home/monitor/Workspace/PyMusic/stream_identify.py Tumar 3  http://192.168.3.155:55655/stream3.mp3;
- 
-source ~/v2.6/bin/activate;
-python  /home/monitor/Workspace/PyMusic/stream_identify.py Sanjyra 4  http://192.168.3.155:55655/stream4.mp3;
- 
-source ~/v2.6/bin/activate;
-python  /home/monitor/Workspace/PyMusic/stream_identify.py ManasJanyrygy 5  http://192.168.3.155:55655/stream5.mp3;
- 
-source ~/v2.6/bin/activate;
-python  /home/monitor/Workspace/PyMusic/stream_identify.py Maral 6  http://192.168.3.155:55655/stream6.mp3;
- 
-source ~/v2.6/bin/activate;
-python  /home/monitor/Workspace/PyMusic/stream_identify.py KyrgyzRadiosu 7  http://192.168.3.155:55655/stream7.mp3;
- 
-source ~/v2.6/bin/activate;
-python  /home/monitor/Workspace/PyMusic/stream_identify.py OK 8  http://192.168.3.155:55655/stream8.mp3;
-
+exec ./startSolr.sh &
+exec ./startTtserver.sh &
+exec ./start1.sh &
+exec ./start2.sh &
+exec ./start3.sh &
+exec ./start4.sh &
+exec ./start5.sh &
+exec ./start6.sh &
+exec ./start7.sh &
+exec ./start8.sh &
