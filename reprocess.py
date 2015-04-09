@@ -60,7 +60,7 @@ if __name__ == "__main__":
 	last_radio=None
         when = sys.argv[1]
 
-        conn = MySQLdb.connect(host= "192.168.3.111",user="root", passwd="123", db="pymusic",charset='utf8')
+        conn = MySQLdb.connect(host= "localhost",user="root", passwd="123", db="pymusic",charset='utf8')
 	db = conn.cursor()
 
         try:
