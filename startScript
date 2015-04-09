@@ -1,6 +1,7 @@
 
-exec /home/monitor/Workspace/PyMusic/startSolr.sh &
 exec /home/monitor/Workspace/PyMusic/startTtserver.sh &
+exec /home/monitor/Workspace/PyMusic/startSolr.sh &
+
 exec /home/monitor/Workspace/PyMusic/start1.sh &
 exec /home/monitor/Workspace/PyMusic/start2.sh &
 exec /home/monitor/Workspace/PyMusic/start3.sh &
