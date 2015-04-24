@@ -15,8 +15,8 @@ def reprocess(fid,decoded,date_played,time_played,radio,radio_id):
 		global last_time,last_radio
 		try:
 			now = time.strftime('%Y-%m-%d %H:%M:%S')
-			#Insert only tracks which differ more than 5 minutes, it is do to prevent repeated insert from different parts of the same track
-			if (last_radio is None) or (last_radio != radio_id) or (last_time == 0) or (current - last_time > 5):
+			#Insert only tracks which differ more than 4 minutes, it is do to prevent repeated insert from different parts of the same track
+			if (last_radio is None) or (last_radio != radio_id) or (last_time == 0) or (current - last_time > 4):
 				last_time=current
 				last_radio=radio_id 
 			
@@ -60,7 +60,7 @@ if __name__ == "__main__":
 	last_radio=None
         when = sys.argv[1]
 
-        conn = MySQLdb.connect(host= "localhost",user="root", passwd="123", db="pymusic",charset='utf8')
+        conn = MySQLdb.connect(host= "localhost",user="root", passwd="ulut123", db="pymusic",charset='utf8')
 	db = conn.cursor()
 
         try:

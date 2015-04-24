@@ -1,0 +1,8 @@
+exec /home/monitor/Workspace/PyMusic/start1.sh &
+exec /home/monitor/Workspace/PyMusic/start2.sh &
+exec /home/monitor/Workspace/PyMusic/start3.sh &
+exec /home/monitor/Workspace/PyMusic/start4.sh &
+exec /home/monitor/Workspace/PyMusic/start5.sh &
+exec /home/monitor/Workspace/PyMusic/start6.sh &
+exec /home/monitor/Workspace/PyMusic/start7.sh &
+exec /home/monitor/Workspace/PyMusic/start8.sh &

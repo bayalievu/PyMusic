@@ -89,11 +89,10 @@ if __name__ == "__main__":
 	radio_id = sys.argv[2]
         stream = sys.argv[3]
 
-	logfile = open("/home/monitor/Workspace/PyMusic/logs/radio"+radio+"logStreamIdentify"+time.strftime('%Y-%m-%d %H:%M:%S'), 'w')
+	logfile = open("/home/monitor/Workspace/PyMusic/logs/radio"+radio+"logStreamIdentify"+time.strftime('%Y-%m-%d %H:%M:%S'), 'w',1)
    	url=urllib2.urlopen(stream)
         conn = MySQLdb.connect(host= "localhost",user="root", passwd="ulut123", db="pymusic",charset='utf8')
         
-	last_result = -1
 	try:	
 		while True:
 	        	now = time.strftime('%Y-%m-%d %H:%M:%S')
@@ -113,10 +112,6 @@ if __name__ == "__main__":
 
 			result = process_file(filename) 
 			os.remove(filename)
-		
-		#if result == 0 or last_result == 0:
-		#	os.remove(filename)
-		#last_result = result
 		
 	except KeyboardInterrupt:
 		logfile.close()
