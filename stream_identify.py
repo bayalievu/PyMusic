@@ -21,7 +21,7 @@ def codegen(file, start=0, duration=30):
 	try:
 		code = json.loads(r[0])
 	except simplejson.scanner.JSONDecodeError:
-		logfile.write("Json cannot be decoded "+str(r[0])+"\n")
+		logfile.write(getNowDateTime()+":Json cannot be decoded "+str(r[0])+"\n")
 		return None
     	
 	return code
@@ -32,10 +32,10 @@ def process_file(filename):
 	if codes is None:
 		return -2
 	if len(codes) == 0:
-		logfile.write("Codegen returned empty list"+"\n")
+		logfile.write(getNowDateTime()+":Codegen returned empty list\n")
 		return -3
 	if "code" not in codes[0]:
-		logfile.write("No code is returned by codegen"+"\n")
+		logfile.write(getNowDateTime()+":No code is returned by codegen\n")
 		return -4
 
 	now_time = time.strftime('%H:%M:%S')
@@ -54,25 +54,35 @@ def process_file(filename):
 			last=track_id
 
 			try:
-	   			logfile.write("Inserting track_id: " + track_id	+ " for file: " + filename+'\n')
-	   			db.execute("""INSERT INTO played_melody(track_id,radio,date_played,time_played,radio_id) VALUES (%s,%s,%s,%s,%s)""",(track_id,radio,now_date,now_time,radio_id))
+                                logfile.write(getNowDateTime()+":Inserting track_id " + track_id       + '\n')
+                                db.execute("""INSERT INTO played_melody(track_id,radio,date_played,time_played,radio_id) VALUES (%s,%s,%s,%s,%s)""",(track_id,radio,getNowDate(),getNowTime(),radio_id))
 	   			conn.commit()
 			except db.Error, e:
-           			logfile.write("Error %d: %s\n" % (e.args[0],e.args[1]))
+           			logfile.write(getNowDateTime())
+                                logfile.write(":Error %d: %s\n" % (e.args[0],e.args[1]))
 	   			conn.rollback()
 		else:
-			logfile.write("Track is already recognized from other file "+filename+'\n')
+			logfile.write(getNowDateTime()+":Track "+track_id+" is already recognized\n")
 
 		db.close()	
 		return 0
 	else:
 		#Insert unknown fingerprints with status 'N'
-		logfile.write("No match found for the file, inserting unknown melody to fingerprint table"+'\n')
-                db.execute("""INSERT INTO fingerprint(fp,radio,date_played,time_played,time_identified,status,radio_id,track_id) VALUES (%s,%s,%s,%s,%s,%s,%s,%s)""",(decoded,radio,now_date,now_time,None,'N',radio_id,None))
+                logfile.write(getNowDateTime()+":No match found for the file, inserting unknown melody to fingerprint table\n")
+                db.execute("""INSERT INTO fingerprint(fp,radio,date_played,time_played,time_identified,status,radio_id,track_id) VALUES (%s,%s,%s,%s,%s,%s,%s,%s)""",(decoded,radio,getNowDate(),getNowTime(),None,'N',radio_id,None))
                 conn.commit()		
 		db.close()	
 		return -1
 		
+
+def getNowTime():
+       return time.strftime('%H:%M:%S')
+
+def getNowDate():
+       return time.strftime('%Y-%m-%d')
+       
+def getNowDateTime():
+       return time.strftime('%Y-%m-%d %H:%M:%S')       
 	
 
 if __name__ == "__main__":
@@ -89,14 +99,13 @@ if __name__ == "__main__":
 	radio_id = sys.argv[2]
         stream = sys.argv[3]
 
-	logfile = open("/home/monitor/Workspace/PyMusic/logs/radio"+radio+"logStreamIdentify"+time.strftime('%Y-%m-%d %H:%M:%S'), 'w',1)
+	logfile = open("/home/monitor/Workspace/PyMusic/logs/radio"+radio+"LogStreamIdentify"+getNowDateTime(), 'w',1)
    	url=urllib2.urlopen(stream)
         conn = MySQLdb.connect(host= "localhost",user="root", passwd="ulut123", db="pymusic",charset='utf8')
         
 	try:	
 		while True:
-	        	now = time.strftime('%Y-%m-%d %H:%M:%S')
-                	filename = "/home/monitor/Workspace/PyMusic/wavs/"+radio+now+'.mp3'
+                	filename = "/home/monitor/Workspace/PyMusic/wavs/"+radio+getNowDateTime()+'.mp3'
                 	f=file(filename, 'wb')
 
                 	# Basically a timer
