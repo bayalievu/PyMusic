@@ -159,7 +159,7 @@ if __name__ == "__main__":
         mp3path = sys.argv[1]
 	
 	# Open logfile
-	logfile = open('logfileProcess', 'w')
+	logfile = open('logfileProcess', 'w', 1)
 	
 	files = glob(mp3path)
 	files.sort()

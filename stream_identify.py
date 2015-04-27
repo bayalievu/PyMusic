@@ -13,7 +13,7 @@ import simplejson as json
 import simplejson.scanner
 
 
-def codegen(file, start=0, duration=30):
+def codegen(file, start=0, duration=40):
     	proclist = [codegen_path, os.path.abspath(file), "%d" % start, "%d" % duration]
     	p = subprocess32.Popen(proclist, stdout=subprocess32.PIPE)                      
     	r = p.communicate()
@@ -114,7 +114,7 @@ if __name__ == "__main__":
                 	t_end_old = t_end
 
                 	# Record in chunks until
-                	while t_end-t_start < timedelta(seconds=30):
+                	while t_end-t_start < timedelta(seconds=40):
                         	f.write(url.read(1024))
                         	t_end = datetime.now()
                 	f.close()
