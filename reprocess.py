@@ -9,7 +9,7 @@ def reprocess(fid,decoded,date_played,time_played,radio,radio_id):
 
         result = fp.best_match_for_query(decoded)
         if result.TRID:
-		logfile.write("Melody is recognized: "+result.TRID)
+		logfile.write("Melody is recognized: "+result.TRID+",")
 		#Melody is recognized
 		track_id = result.TRID
 		current = convertTimeToMinutes(time_played)
@@ -62,11 +62,12 @@ def getNowDateTime():
 
 
 if __name__ == "__main__":
-	logfile.write(getNowDateTime()+'\n')
  	if len(sys.argv) < 2:
                 print "Usage: python reprocess.py startDate(YYYY-mm-DD)"
                 exit()
 
+	logfile = open("logs/reprocess"+getNowDateTime(), 'w',1)
+	logfile.write(getNowDateTime()+'\n')
         last_time=0
 	recognized = 0
 	last_radio=None
@@ -76,7 +77,6 @@ if __name__ == "__main__":
 	db = conn.cursor()
 
         try:
-		logfile = open("logs/reprocess"+getNowDateTime(), 'w',1)
                 
 		db.execute("""(SELECT * FROM fingerprint where status='N' and date_played>=%s and date_played<%s order by radio_id,time_played) union (SELECT * FROM fingerprint where status='N' and date_played=%s and time_played<%s order by radio_id,time_played)""",(startDate,getNowDate(),getNowDate(),getNowTime()))
 
@@ -104,8 +104,8 @@ if __name__ == "__main__":
 		exit()
 	
 	logfile.write(getNowDateTime()+'\n')
-	logfile.write("Songs recognized: " + str(recognized))
+	logfile.write("Songs recognized: " + str(recognized)+'\n')
 	db.close()
 	logfile.close()
 	conn.close()	
-	
+        exit()	
