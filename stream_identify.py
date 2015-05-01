@@ -128,3 +128,6 @@ if __name__ == "__main__":
 		url.close()
 		f.close()
 		exit()
+	except:
+    		logfile.write(getNowDateTime()+":Unexpected error:" + sys.exc_info()[0])
+    		raise

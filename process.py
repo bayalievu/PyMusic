@@ -47,35 +47,33 @@ def parse_json(c):
 
     	return data
 
-def process_file(filename,c):
-	cyrillic_filename = filename
-	#Convert latin to to cyrillic
-	try:
-    		filename.decode('ascii')
-	except UnicodeDecodeError:
-		cyrillic_filename = filename
-	else:
-		cyrillic_filename = translit(filename,'ru')
-		
+def process_file(absoluteFilename,c):
 	
-	s = cyrillic_filename.split('/')[-1].split("-")	
-	artist=s[0].strip()
+	#Get filename from absolute path
+	filename = absoluteFilename.split('/')[-1].split("-")	
+	#Get artists from filename
+	artist=filename[0].strip()
 	song = ""
-        logfile.write(filename+'\n')
-	if len(s) > 1:
-		song = s[1].split(".")[0].strip()
+        logfile.write(absoluteFilename+'\n')
+	#Get song name from filename
+	if len(filename) > 1:
+		song = filename[1].split(".")[0].strip()
 
+	#Add artists to Database
 	artists_id=addArtistToDb(artist)
 	
+	#Get track id
 	code = parse_json(c[0])	
 	track_id =code["track_id"]
 	
+	#Save fingerprint in Solr
 	fp.ingest(code, do_commit=False)
     	fp.commit()
 
 	db = conn.cursor()
 	try:
-	   	db.execute("""INSERT INTO melody(track_id,artist,song,filename) VALUES (%s,%s,%s,%s)""",(track_id,artist,song,filename))
+		#Insert into melody table
+	   	db.execute("""INSERT INTO melody(track_id,artist,song,filename) VALUES (%s,%s,%s,%s)""",(track_id,artist,song,absoluteFilename))
 	   	logfile.write("Inserted track to database "+track_id+'\n')
 	   	conn.commit()
 		insertArtistMelodyLink(artists_id,db.lastrowid)
@@ -138,6 +136,7 @@ def getArtists():
 	
 	db.close()
 
+#Check is melody fingerprint is already in Solr
 def melodyExists(filename,c):
 	decoded = fp.decode_code_string(c[0]["code"])
         result = fp.best_match_for_query(decoded)
@@ -168,7 +167,7 @@ if __name__ == "__main__":
         	if c is None or len(c)==0 or "code" not in c[0]:
 			logfile.write("No code is generated for: " + filename+'\n')
 			continue
- 
+ 		#Add melody if it does not already exists
 		if not melodyExists(filename,c):
        			process_file(filename,c)
 
