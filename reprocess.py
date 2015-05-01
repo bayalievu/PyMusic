@@ -62,8 +62,8 @@ def getNowDateTime():
 
 
 if __name__ == "__main__":
- 	if len(sys.argv) < 2:
-                print "Usage: python reprocess.py startDate(YYYY-mm-DD)"
+ 	if len(sys.argv) < 3:
+                print "Usage: python reprocess.py startDate(YYYY-mm-DD) endDate(YYYY-mm-DD)"
                 exit()
 
 	logfile = open("logs/reprocess"+getNowDateTime(), 'w',1)
@@ -72,13 +72,15 @@ if __name__ == "__main__":
 	recognized = 0
 	last_radio=None
         startDate = sys.argv[1]
+	endDate = sys.argv[2]
+	
 
         conn = MySQLdb.connect(host= "localhost",user="root", passwd="ulut123", db="pymusic",charset='utf8')
 	db = conn.cursor()
 
         try:
                 
-		db.execute("""(SELECT * FROM fingerprint where status='N' and date_played>=%s and date_played<%s order by radio_id,time_played) union (SELECT * FROM fingerprint where status='N' and date_played=%s and time_played<%s order by radio_id,time_played)""",(startDate,getNowDate(),getNowDate(),getNowTime()))
+		db.execute("""SELECT * FROM fingerprint where status='N' and date_played>=%s and date_played<=%s order by radio_id,time_played""",(startDate,endDate))
 
 		logfile.write(db._executed+'\n')
                 # Fetch all the rows in a list of lists.
