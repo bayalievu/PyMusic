@@ -56,10 +56,6 @@ def process_file(path,c,mid,song):
 	code = parse_json(c[0])	
 	track_id =code["track_id"]
 	
-	#Save fingerprint in Solr
-	fp.ingest(code, do_commit=False)
-    	fp.commit()
-	
 	conn = MySQLdb.connect(host= "localhost",user="root", passwd="ulut123", db="pymusic",charset='utf8')
 	db = conn.cursor()
 	try:
@@ -68,9 +64,13 @@ def process_file(path,c,mid,song):
 	   	logfile.write("Inserted track to database "+track_id+'\n')
 	   	conn.commit()
 		insertArtistMelodyLink(artists_id,db.lastrowid)
+		
+		#Save fingerprint in Solr
+		fp.ingest(code, do_commit=False)
+    		fp.commit()
 	except db.Error, e:
            	logfile.write("Error %d: %s" % (e.args[0],e.args[1]))
-		updateUpploadedMelodyError("Could not insert artist or  melody table Error %d: %s" % (e.args[0],e.args[1]),mid,0)	
+		updateUploadedMelodyError("Could not insert artist or  melody table Error %d: %s" % (e.args[0],e.args[1]),mid,1,0)	
 		conn.rollback()
 
 	db.close()
@@ -102,7 +102,7 @@ def getArtistsFromUploadedMelody(mid):
                         artists.append(a)
 	except db.Error, e:
         	logfile.write("Error %d: %s" % (e.args[0],e.args[1]))
-		updateUpploadedMelodyError("Error in getArtistsFromUploaded Melody %d: %s" % (e.args[0],e.args[1]),mid,0)
+		updateUploadedMelodyError("Error in getArtistsFromUploaded Melody %d: %s" % (e.args[0],e.args[1]),mid,1,0)
 		return None		
 	
 	db.close()
@@ -119,12 +119,12 @@ def melodyExists(filename,c):
 	else:
 		return False
 
-def updateUpploadedMelodyError(error,mid,status):
+def updateUploadedMelodyError(error,mid,declined_status,added_status):
         conn = MySQLdb.connect(host= "localhost",user="root", passwd="ulut123", db="pymusic",charset='utf8')
         db = conn.cursor()
                 
 	try:
-        	db.execute("""update uploaded_song set melody_declined_error = %s,melody_added_flag=%s where id = %s """,(error,status,mid))
+        	db.execute("""update uploaded_song set melody_declined_error = %s,melody_declined_flag=%s,melody_added_flag=%s where id = %s """,(error,declined_status,added_status,mid))
                 logfile.write("Update upploaded_song error and status:"+str(mid)+"\n")
                 conn.commit()
         except db.Error, e:
@@ -143,8 +143,8 @@ if __name__ == "__main__":
 
 	cursor = connection.cursor()
 
-        sql = "select id,filename,song_name from uploaded_song where approved_flag = 1 and melody_added_flag = 0"
-
+        sql = "select id,filename,song_name from uploaded_song where approved_flag = 1 and melody_added_flag = 0 and melody_declined_flag = 0"
+	files_added = 0
         try:
                 cursor.execute(sql)
                 results = cursor.fetchall()
@@ -155,18 +155,19 @@ if __name__ == "__main__":
                 	c=codegen(filename)
                 	if c is None or len(c)==0 or "code" not in c[0]:
                         	logfile.write("No code is generated for: " + filename+'\n')
-				updateUpploadedMelodyError("File is corrupted, no fingerprint could be generated",mid,0)
+				updateUploadedMelodyError("File is corrupted, no fingerprint could be generated",mid,1,0)
                         	continue
                 	#Add melody if it does not already exists
-                	if not melodyExists(filename,c):
-                        	process_file(filename,c,mid)
-				updateUpploadedMelodyError("Melody successfully added",mid,1);
+			if not melodyExists(filename,c):
+                        	process_file(filename,c,mid,song)
+				updateUploadedMelodyError("Melody successfully added",mid,0,1)
+				files_added = files_added + 1
 			else:
-				updateUpploadedMelodyError("Melody already exists in Database",mid,1)
-			
+				updateUploadedMelodyError("Melody already exists in Database",mid,1,0)
         except cursor.Error, e:
                 logfile.write("Error %d: %s" % (e.args[0],e.args[1]))	
 
+	logfile.write("Number of melodies added:"+str(files_added))
         cursor.close()
 	connection.close()	
 	logfile.close()

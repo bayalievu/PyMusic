@@ -1,4 +1,3 @@
-
 import MySQLdb
 import sys
 import os
@@ -21,7 +20,6 @@ def codegen(file):
     return json.loads(code)
 
 def parse_json(c):
-
         code = c["code"]
         m = c["metadata"]
         if "track_id" in m:
@@ -48,7 +46,6 @@ def parse_json(c):
     	return data
 
 def process_file(absoluteFilename,c):
-	
 	#Get filename from absolute path
 	filename = absoluteFilename.split('/')[-1].split("-")	
 	#Get artists from filename
@@ -65,10 +62,6 @@ def process_file(absoluteFilename,c):
 	#Get track id
 	code = parse_json(c[0])	
 	track_id =code["track_id"]
-	
-	#Save fingerprint in Solr
-	fp.ingest(code, do_commit=False)
-    	fp.commit()
 
 	db = conn.cursor()
 	try:
@@ -77,6 +70,10 @@ def process_file(absoluteFilename,c):
 	   	logfile.write("Inserted track to database "+track_id+'\n')
 	   	conn.commit()
 		insertArtistMelodyLink(artists_id,db.lastrowid)
+		
+		#Save fingerprint in Solr
+		fp.ingest(code, do_commit=False)
+    		fp.commit()
 	except db.Error, e:
            	logfile.write("Error %d: %s" % (e.args[0],e.args[1]))
 	   	conn.rollback()
@@ -146,6 +143,9 @@ def melodyExists(filename,c):
 	else:
 		return False
 
+def getNowDateTime():
+       import time
+       return time.strftime('%Y-%m-%d %H:%M:%S')
 	
 if __name__ == "__main__":
 	if len(sys.argv) < 2:
@@ -158,7 +158,7 @@ if __name__ == "__main__":
         mp3path = sys.argv[1]
 	
 	# Open logfile
-	logfile = open('/home/monitor/Workspace/PyMusic/logs/logfileProcess', 'w', 1)
+	logfile = open('/home/monitor/Workspace/PyMusic/logs/logfileProcess'+getNowDateTime(), 'w', 1)
 	
 	files = glob(mp3path)
 	files.sort()
