@@ -85,7 +85,7 @@ if __name__ == "__main__":
 
         	for i in range(parts):
                 	part = segment[i*one_minute:(i+1)*one_minute]
-                	part.export("/home/monitor/Workspace/PyMusic/mp3/"+"%09d"%i+".mp3", format="mp3",bitrate="128k")
+                	part.export("/home/monitor/Workspace/PyMusic/mp3/"+"%09d"%i+".mp3", format="mp3",bitrate="80k")
 
 
         	# Process files sorted by modified time
