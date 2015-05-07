@@ -75,6 +75,7 @@ def process_file(path,c,mid,song):
 
 	db.close()
 	conn.close()
+	return track_id
 
 def insertArtistMelodyLink(artists_id,melody_id):
 	conn = MySQLdb.connect(host= "localhost",user="root", passwd="ulut123", db="pymusic",charset='utf8')
@@ -110,11 +111,12 @@ def getArtistsFromUploadedMelody(mid):
 	return artists
 
 #Check is melody fingerprint is already in Solr
-def melodyExists(filename,c):
+def melodyExists(filename,ci,mid):
 	decoded = fp.decode_code_string(c[0]["code"])
         result = fp.best_match_for_query(decoded)
         if result.TRID:
 		logfile.write(filename+" is already in the database\n")
+		updateUploadedMelodyError("Melody already exists in Database:"+result.TRID,mid,1,0)
         	return True
 	else:
 		return False
@@ -158,14 +160,15 @@ if __name__ == "__main__":
 				updateUploadedMelodyError("File is corrupted, no fingerprint could be generated",mid,1,0)
                         	continue
                 	#Add melody if it does not already exists
-			if not melodyExists(filename,c):
-                        	process_file(filename,c,mid,song)
-				updateUploadedMelodyError("Melody successfully added",mid,0,1)
+			if not melodyExists(filename,c,mid):
+                        	track_id = process_file(filename,c,mid,song)
+				updateUploadedMelodyError("Melody successfully added:"+track_id,mid,0,1)
 				files_added = files_added + 1
-			else:
-				updateUploadedMelodyError("Melody already exists in Database",mid,1,0)
-        except cursor.Error, e:
+        
+	except cursor.Error, e:
                 logfile.write("Error %d: %s" % (e.args[0],e.args[1]))	
+	except:
+		logfile.write("Unexpected error:" + sys.exc_info()[0])	
 
 	logfile.write("Number of melodies added:"+str(files_added))
         cursor.close()
