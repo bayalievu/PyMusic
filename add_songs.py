@@ -116,17 +116,17 @@ def melodyExists(filename,ci,mid):
         result = fp.best_match_for_query(decoded)
         if result.TRID:
 		logfile.write(filename+" is already in the database\n")
-		updateUploadedMelodyError("Melody already exists in Database:"+result.TRID,mid,1,0)
+		updateUploadedMelodyError("Melody already exists in Database",mid,1,0,result.TRID)
         	return True
 	else:
 		return False
 
-def updateUploadedMelodyError(error,mid,declined_status,added_status):
+def updateUploadedMelodyError(error,mid,declined_status,added_status,track_id=None):
         conn = MySQLdb.connect(host= "localhost",user="root", passwd="ulut123", db="pymusic",charset='utf8')
         db = conn.cursor()
                 
 	try:
-        	db.execute("""update uploaded_song set melody_declined_error = %s,melody_declined_flag=%s,melody_added_flag=%s where id = %s """,(error,declined_status,added_status,mid))
+        	db.execute("""update uploaded_song set melody_declined_error = %s,melody_declined_flag=%s,melody_added_flag=%s,track_id=%s where id = %s """,(error,declined_status,added_status,track_id,mid))
                 logfile.write("Update upploaded_song error and status:"+str(mid)+"\n")
                 conn.commit()
         except db.Error, e:
@@ -141,7 +141,7 @@ if __name__ == "__main__":
 	connection = MySQLdb.connect(host= "localhost",user="root", passwd="ulut123", db="pymusic",charset='utf8')
 		
 	# Open logfile
-	logfile = open('/home/monitor/Workspace/PyMusic/logs/uploadLogfile'+getNowDateTime(), 'w', 1)
+	logfile = open('/home/monitor/Workspace/PyMusic/logs/uploadLogfile', 'a', 1)
 
 	cursor = connection.cursor()
 
@@ -170,7 +170,7 @@ if __name__ == "__main__":
 	except:
 		logfile.write("Unexpected error:" + sys.exc_info()[0])	
 
-	logfile.write("Number of melodies added:"+str(files_added))
+	logfile.write(getNowDateTime()+":Number of melodies added:"+str(files_added)+'\n')
         cursor.close()
 	connection.close()	
 	logfile.close()

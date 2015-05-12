@@ -8,7 +8,7 @@ import fp
 def reprocess(fid,decoded,date_played,time_played,radio,radio_id):
 
         result = fp.best_match_for_query(decoded)
-        if result.TRID:
+        if result.TRID and result.TRID not in ignored_songs:
 		logfile.write("Melody is recognized: "+result.TRID+",")
 		#Melody is recognized
 		track_id = result.TRID
@@ -61,7 +61,7 @@ if __name__ == "__main__":
                 print "Usage: python reprocess.py startDate(YYYY-mm-DD) endDate(YYYY-mm-DD)"
                 exit()
 
-	logfile = open("logs/reprocess"+getNowDateTime(), 'w',1)
+	logfile = open("/home/monitor/Workspace/PyMusic/logs/reprocess"+getNowDateTime(), 'w',1)
 	logfile.write(getNowDateTime()+'\n')
         last_time=0
 	recognized = 0
@@ -70,6 +70,8 @@ if __name__ == "__main__":
         startDate = sys.argv[1]
 	endDate = sys.argv[2]
 	
+        ignored_songs =[]
+        ignored_songs.append('TROWTHB14D0E92A254')
 
         conn = MySQLdb.connect(host= "localhost",user="root", passwd="ulut123", db="pymusic",charset='utf8')
 	cursor = conn.cursor()

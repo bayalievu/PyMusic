@@ -12,7 +12,6 @@ codegen_path = os.path.abspath("/home/monitor/Workspace/echoprint-codegen/echopr
 import simplejson as json
 import simplejson.scanner
 
-
 def codegen(file, start=0, duration=40):
     	proclist = [codegen_path, os.path.abspath(file), "%d" % start, "%d" % duration]
     	p = subprocess32.Popen(proclist, stdout=subprocess32.PIPE)                      
@@ -45,7 +44,7 @@ def process_file(filename):
 	
         decoded = fp.decode_code_string(codes[0]["code"])
         result = fp.best_match_for_query(decoded)
-        if result.TRID:
+        if result.TRID and result.TRID not in ignored_songs:
 		#Melody is recognized
 		track_id = result.TRID
 		global last
@@ -66,7 +65,7 @@ def process_file(filename):
 
 		db.close()	
 		return 0
-	else:
+	elif result.TRID is None or result.TRID not in ignored_songs:
 		#Insert unknown fingerprints with status 'N'
                 logfile.write(getNowDateTime()+":No match found for the file, inserting unknown melody to fingerprint table\n")
                 db.execute("""INSERT INTO fingerprint(fp,radio,date_played,time_played,time_identified,status,radio_id,track_id) VALUES (%s,%s,%s,%s,%s,%s,%s,%s)""",(decoded,radio,getNowDate(),getNowTime(),None,'N',radio_id,None))
@@ -93,6 +92,9 @@ if __name__ == "__main__":
 	if len(sys.argv) < 4:
                 print "Usage: python stream_identify.py radio radio_id stream"
                 exit()
+
+	ignored_songs =[]
+	ignored_songs.append('TROWTHB14D0E92A254')
 
 	last=0
         radio = sys.argv[1]
