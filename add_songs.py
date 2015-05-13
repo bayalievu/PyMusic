@@ -5,15 +5,20 @@ import subprocess32
 from transliterate import translit
 from glob import glob
 import simplejson as json
-
-sys.path.insert(0, "/home/monitor/Workspace/echoprint-server/API")
+workspace = "/home/monitor/Workspace/"
+sys.path.insert(0, workspace + "echoprint-server/API")
 import fp
 
-codegen_path = os.path.abspath("/home/monitor/Workspace/echoprint-codegen/echoprint-codegen")
+codegen_path = os.path.abspath(workspace +"echoprint-codegen/echoprint-codegen")
 
 def getNowDateTime():
        import time
        return time.strftime('%Y-%m-%d %H:%M:%S')       
+
+def getNowDate():
+       import time
+       return time.strftime('%Y-%m-%d')       
+
 
 def codegen(file):
     proclist = [codegen_path, os.path.abspath(file)]
@@ -127,7 +132,6 @@ def updateUploadedMelodyError(error,mid,declined_status,added_status,track_id=No
                 
 	try:
         	db.execute("""update uploaded_song set melody_declined_error = %s,melody_declined_flag=%s,melody_added_flag=%s,track_id=%s where id = %s """,(error,declined_status,added_status,track_id,mid))
-                logfile.write("Update upploaded_song error and status:"+str(mid)+"\n")
                 conn.commit()
         except db.Error, e:
         	raise
@@ -135,13 +139,12 @@ def updateUploadedMelodyError(error,mid,declined_status,added_status,track_id=No
 	db.close()
         conn.close()
 	
-	
 if __name__ == "__main__":
 	# Open connection
 	connection = MySQLdb.connect(host= "localhost",user="root", passwd="ulut123", db="pymusic",charset='utf8')
 		
 	# Open logfile
-	logfile = open('/home/monitor/Workspace/PyMusic/logs/uploadLogfile', 'a', 1)
+	logfile = open(workspace+'PyMusic/logs/uploadLogfile', 'a', 1)
 
 	cursor = connection.cursor()
 
@@ -164,7 +167,7 @@ if __name__ == "__main__":
                         	track_id = process_file(filename,c,mid,song)
 				updateUploadedMelodyError("Melody successfully added:"+track_id,mid,0,1)
 				files_added = files_added + 1
-        
+		
 	except cursor.Error, e:
                 logfile.write("Error %d: %s" % (e.args[0],e.args[1]))	
 	except:

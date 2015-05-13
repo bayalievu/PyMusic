@@ -16,6 +16,31 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
+-- Table structure for table `approved_songs`
+--
+
+DROP TABLE IF EXISTS `approved_songs`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `approved_songs` (
+  `id` int(10) NOT NULL AUTO_INCREMENT,
+  `username` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `singer_name` varchar(100) COLLATE utf8_unicode_ci NOT NULL,
+  `song_name` varchar(100) COLLATE utf8_unicode_ci NOT NULL,
+  `akyn` varchar(100) COLLATE utf8_unicode_ci NOT NULL,
+  `composer` varchar(100) COLLATE utf8_unicode_ci NOT NULL,
+  `arranger` varchar(100) COLLATE utf8_unicode_ci NOT NULL,
+  `producer` varchar(100) COLLATE utf8_unicode_ci NOT NULL,
+  `year` int(5) NOT NULL,
+  `genre` varchar(100) COLLATE utf8_unicode_ci NOT NULL,
+  `filename` varchar(2048) COLLATE utf8_unicode_ci NOT NULL,
+  `uploaded_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `approve_flag` tinyint(1) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=91 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `artist`
 --
 
@@ -29,8 +54,15 @@ CREATE TABLE `artist` (
   `birthdate` date DEFAULT NULL,
   `active` tinyint(1) DEFAULT NULL,
   `phonenumber` varchar(20) DEFAULT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3782 DEFAULT CHARSET=latin1;
+  `is_singer` tinyint(1) DEFAULT '1',
+  `is_compositor` tinyint(1) DEFAULT '0',
+  `is_editor` tinyint(1) DEFAULT '0',
+  `is_arranger` tinyint(1) DEFAULT '0',
+  `is_producer` tinyint(1) DEFAULT '0',
+  `photo_url` varchar(2048) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `artist_name` (`name`(255))
+) ENGINE=InnoDB AUTO_INCREMENT=852 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -45,7 +77,7 @@ CREATE TABLE `artist_melody` (
   `artist_id` int(11) DEFAULT NULL,
   `melody_id` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=4860 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=6133 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -71,7 +103,62 @@ CREATE TABLE `fingerprint` (
   KEY `fp_date_played_index` (`date_played`),
   KEY `fp_radio_id_index` (`radio_id`),
   KEY `fp_track_id_index` (`track_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=310353 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=496026 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `genre`
+--
+
+DROP TABLE IF EXISTS `genre`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `genre` (
+  `id` int(6) NOT NULL DEFAULT '12',
+  `name` varchar(250) COLLATE utf8_unicode_ci NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `logcompare`
+--
+
+DROP TABLE IF EXISTS `logcompare`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `logcompare` (
+  `log_id` int(50) NOT NULL AUTO_INCREMENT,
+  `date_view` varchar(255) NOT NULL,
+  `time_view` varchar(255) NOT NULL,
+  `userid` int(11) DEFAULT NULL,
+  `singer1` int(11) DEFAULT NULL,
+  `singer2` int(11) DEFAULT NULL,
+  `username` varchar(25) DEFAULT NULL,
+  `singername1` varchar(25) DEFAULT NULL,
+  `singername2` varchar(25) DEFAULT NULL,
+  PRIMARY KEY (`log_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=630 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `logs`
+--
+
+DROP TABLE IF EXISTS `logs`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `logs` (
+  `log_id` int(50) NOT NULL AUTO_INCREMENT,
+  `remote_addr` varchar(255) NOT NULL,
+  `request_uri` varchar(255) NOT NULL,
+  `message` text NOT NULL,
+  `date_view` varchar(255) NOT NULL,
+  `time_view` varchar(255) NOT NULL,
+  `userid` int(11) DEFAULT NULL,
+  `status` int(11) DEFAULT NULL,
+  PRIMARY KEY (`log_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1627 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -91,7 +178,7 @@ CREATE TABLE `melody` (
   UNIQUE KEY `track_id` (`track_id`),
   KEY `artist_index` (`artist`),
   KEY `song_index` (`song`)
-) ENGINE=InnoDB AUTO_INCREMENT=9487 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=5736 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -113,9 +200,8 @@ CREATE TABLE `played_melody` (
   KEY `time_played_index` (`time_played`),
   KEY `date_played_index` (`date_played`),
   KEY `track_id_index` (`track_id`),
-  KEY `radio_id` (`radio_id`),
-  CONSTRAINT `played_melody_ibfk_1` FOREIGN KEY (`radio_id`) REFERENCES `radio` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=18098 DEFAULT CHARSET=latin1;
+  KEY `radio_id` (`radio_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=40618 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -128,8 +214,59 @@ DROP TABLE IF EXISTS `radio`;
 CREATE TABLE `radio` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(45) DEFAULT NULL,
+  `logo` varchar(225) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `uploaded_artist_melody`
+--
+
+DROP TABLE IF EXISTS `uploaded_artist_melody`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `uploaded_artist_melody` (
+  `id` int(10) NOT NULL AUTO_INCREMENT,
+  `artist_id` int(10) NOT NULL,
+  `melody_id` int(10) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `artist_id` (`artist_id`),
+  KEY `melody_id` (`melody_id`),
+  CONSTRAINT `uploaded_artist_melody_ibfk_1` FOREIGN KEY (`artist_id`) REFERENCES `artist` (`id`),
+  CONSTRAINT `uploaded_artist_melody_ibfk_2` FOREIGN KEY (`melody_id`) REFERENCES `melody` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=312 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `uploaded_song`
+--
+
+DROP TABLE IF EXISTS `uploaded_song`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `uploaded_song` (
+  `id` int(10) NOT NULL AUTO_INCREMENT,
+  `username` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `singer_name` varchar(100) COLLATE utf8_unicode_ci NOT NULL,
+  `song_name` varchar(100) COLLATE utf8_unicode_ci NOT NULL,
+  `akyn` varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `composer` varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `arranger` varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `producer` varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `year` int(5) DEFAULT NULL,
+  `genre` int(7) DEFAULT NULL,
+  `filename` varchar(2048) COLLATE utf8_unicode_ci NOT NULL,
+  `uploaded_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `approved_flag` tinyint(1) DEFAULT '0',
+  `melody_added_flag` tinyint(1) DEFAULT '0',
+  `melody_declined_flag` tinyint(1) DEFAULT '0',
+  `melody_declined_error` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `track_id` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `genre` (`genre`),
+  CONSTRAINT `uploaded_song_ibfk_1` FOREIGN KEY (`genre`) REFERENCES `genre` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=425 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -167,9 +304,10 @@ CREATE TABLE `users` (
   `full_name` varchar(225) NOT NULL,
   `email` varchar(50) NOT NULL,
   `phone` varchar(50) NOT NULL,
+  `p` varchar(10) DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `username` (`username`)
-) ENGINE=InnoDB AUTO_INCREMENT=38 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=168 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -181,4 +319,4 @@ CREATE TABLE `users` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2015-04-03 19:55:25
+-- Dump completed on 2015-05-13 17:31:32

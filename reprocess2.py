@@ -1,5 +1,6 @@
+workspace = "/home/monitor/Workspace/"
 import sys
-sys.path.insert(0, "/home/monitor/Workspace/echoprint-server/API")
+sys.path.insert(0, workspace+"echoprint-server/API")
 import MySQLdb
 import os
 import time    
@@ -71,7 +72,7 @@ if __name__ == "__main__":
                 print "Usage: python reprocess.py startDate(YYYY-mm-DD) endDate(YYYY-mm-DD)"
                 exit()
 
-	logfile = open("/home/monitor/Workspace/PyMusic/logs/reprocess"+getNowDateTime(), 'w',1)
+	logfile = open(workspace+"PyMusic/logs/reprocess"+getNowDateTime(), 'w',1)
 	logfile.write(getNowDateTime()+'\n')
         last_time=0
 	recognized = 0

@@ -1,5 +1,6 @@
+workspace = "/home/monitor/Workspace/"
 import sys
-sys.path.insert(0, "/home/monitor/Workspace/echoprint-server/API")
+sys.path.insert(0, workspace+"echoprint-server/API")
 import MySQLdb
 import os
 import time    
@@ -55,13 +56,31 @@ def getNowDate():
 def getNowDateTime():
 	return time.strftime('%Y-%m-%d %H:%M:%S')	
 
+def melodyAddedYesterday():
+	import datetime
+	yesterday = datetime.datetime.now() + datetime.timedelta(-1)
+	yesterday = yesterday.strftime('%Y-%m-%d') + '%'
+	
+	conn = MySQLdb.connect(host= "localhost",user="root", passwd="ulut123", db="pymusic",charset='utf8')
+        cursor = conn.cursor()
+
+	cursor.execute("""select count(*) from uploaded_song where approved_flag =1 and melody_added_flag = 1 and melody_declined_flag = 0 and uploaded_date like %s""",(yesterday,))
+	row = cursor.fetchone()
+	
+	if row[0] > 0:
+		return True
+	else:
+		return False
+	
+	cursor.close()
+	conn.close()
 
 if __name__ == "__main__":
  	if len(sys.argv) < 3:
                 print "Usage: python reprocess.py startDate(YYYY-mm-DD) endDate(YYYY-mm-DD)"
                 exit()
 
-	logfile = open("/home/monitor/Workspace/PyMusic/logs/reprocess"+getNowDateTime(), 'w',1)
+	logfile = open(workspace+"PyMusic/logs/reprocess"+getNowDateTime(), 'w',1)
 	logfile.write(getNowDateTime()+'\n')
         last_time=0
 	recognized = 0
@@ -77,20 +96,20 @@ if __name__ == "__main__":
 	cursor = conn.cursor()
 
         try:
-                
-		cursor.execute("""SELECT * FROM fingerprint where status='N' and date_played>=%s and date_played<=%s order by radio_id,date_played,time_played""",(startDate,endDate))
-
-		logfile.write(cursor._executed+'\n')
-                # Fetch all the rows in a list of lists.
-                results = cursor.fetchall()
-                for row in results:
-			fid = row[0]
-			decoded = row[1]
-			radio = row[2]
-			date_played = row[3]
-			time_played = row[4]
-			radio_id = row[7]
-			reprocess(fid,decoded,date_played,time_played,radio,radio_id)
+		if melodyAddedYesterday():
+			cursor.execute("""SELECT * FROM fingerprint where status='N' and date_played>=%s and date_played<=%s order by radio_id,date_played,time_played""",(startDate,endDate))
+			logfile.write(cursor._executed+'\n')
+                	results = cursor.fetchall()
+                	for row in results:
+				fid = row[0]
+				decoded = row[1]
+				radio = row[2]
+				date_played = row[3]
+				time_played = row[4]
+				radio_id = row[7]
+				reprocess(fid,decoded,date_played,time_played,radio,radio_id)
+		else:
+			logfile.write("No melodies added yesterday, reprocessing will not start\n")
         except cursor.Error, e:
                 logfile.write("Error %d: %s" % (e.args[0],e.args[1]))
 		cursor.close()
@@ -108,4 +127,3 @@ if __name__ == "__main__":
 	cursor.close()
 	logfile.close()
 	conn.close()	
-        exit()	

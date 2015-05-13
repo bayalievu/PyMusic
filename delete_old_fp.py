@@ -1,17 +1,8 @@
-import sys
 import MySQLdb
-import os
 import time    
 
-def getNowTime():
-	return time.strftime('%H:%M:%S')
-
-def getNowDate():
-	return time.strftime('%Y-%m-%d')
-		
 def getNowDateTime():
 	return time.strftime('%Y-%m-%d %H:%M:%S')	
-
 
 if __name__ == "__main__":
 	import datetime

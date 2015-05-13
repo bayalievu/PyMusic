@@ -5,11 +5,11 @@ import subprocess32
 from transliterate import translit
 from glob import glob
 import simplejson as json
-
-sys.path.insert(0, "/home/monitor/Workspace/echoprint-server/API")
+workspace = "/home/monitor/Workspace/"
+sys.path.insert(0, workspace + "echoprint-server/API")
 import fp
 
-codegen_path = os.path.abspath("/home/monitor/Workspace/echoprint-codegen/echoprint-codegen")
+codegen_path = os.path.abspath(workspace+"echoprint-codegen/echoprint-codegen")
 
 artists = {}
 
@@ -158,7 +158,7 @@ if __name__ == "__main__":
         mp3path = sys.argv[1]
 	
 	# Open logfile
-	logfile = open('/home/monitor/Workspace/PyMusic/logs/logfileProcess'+getNowDateTime(), 'w', 1)
+	logfile = open(workspace+'PyMusic/logs/logfileProcess'+getNowDateTime(), 'w', 1)
 	
 	files = glob(mp3path)
 	files.sort()

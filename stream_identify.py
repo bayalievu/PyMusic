@@ -1,5 +1,6 @@
+workspace = "/home/monitor/Workspace/"
 import sys
-sys.path.insert(0, "/home/monitor/Workspace/echoprint-server/API")
+sys.path.insert(0, workspace+"echoprint-server/API")
 import MySQLdb
 import os
 import subprocess32
@@ -7,7 +8,7 @@ import time
 from glob import glob
 import fp
 
-codegen_path = os.path.abspath("/home/monitor/Workspace/echoprint-codegen/echoprint-codegen")
+codegen_path = os.path.abspath(workspace + "echoprint-codegen/echoprint-codegen")
 
 import simplejson as json
 import simplejson.scanner
@@ -101,13 +102,13 @@ if __name__ == "__main__":
 	radio_id = sys.argv[2]
         stream = sys.argv[3]
 
-	logfile = open("/home/monitor/Workspace/PyMusic/logs/radio"+radio+"LogStreamIdentify"+getNowDateTime(), 'w',1)
+	logfile = open(workspace+"PyMusic/logs/radio"+radio+"LogStreamIdentify"+getNowDateTime(), 'w',1)
    	url=urllib2.urlopen(stream)
         conn = MySQLdb.connect(host= "localhost",user="root", passwd="ulut123", db="pymusic",charset='utf8')
         
 	try:	
 		while True:
-                	filename = "/home/monitor/Workspace/PyMusic/wavs/"+radio+getNowDateTime()+'.mp3'
+                	filename = workspace+"PyMusic/wavs/"+radio+getNowDateTime()+'.mp3'
                 	f=file(filename, 'wb')
 
                 	# Basically a timer

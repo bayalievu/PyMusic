@@ -13,4 +13,5 @@ sleep 3
 exec /home/monitor/Workspace/PyMusic/start7.sh &
 sleep 3
 exec /home/monitor/Workspace/PyMusic/start8.sh &
-
+sleep 3
+exec /home/monitor/Workspace/PyMusic/start9.sh &

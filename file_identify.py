@@ -1,5 +1,6 @@
+workspace = "/home/monitor/Workspace/"
 import sys
-sys.path.insert(0, "/home/monitor/Workspace/echoprint-server/API")
+sys.path.insert(0, workspace +"echoprint-server/API")
 import MySQLdb
 import os
 import subprocess32
@@ -8,7 +9,7 @@ from glob import glob
 import fp
 from pydub import AudioSegment
 
-codegen_path = os.path.abspath("/home/monitor/Workspace/echoprint-codegen/echoprint-codegen")
+codegen_path = os.path.abspath(workspace+"echoprint-codegen/echoprint-codegen")
 
 import simplejson as json
 import simplejson.scanner
@@ -39,9 +40,6 @@ def process_file(filename):
 		logfile.write(getNowDateTime()+":No code is returned by codegen\n")
 		return -4
 
-	db = conn.cursor()    	
-	track_id = None
-	
         decoded = fp.decode_code_string(codes[0]["code"])
         result = fp.best_match_for_query(decoded)
         if result.TRID:
@@ -67,13 +65,11 @@ if __name__ == "__main__":
                 print "Usage: python file_identify.py radio radio_id filename"
                 exit()
 
-	last=None
         radio = sys.argv[1]
 	radio_id = sys.argv[2]
         filename = sys.argv[3]
 
-	logfile = open("/home/monitor/Workspace/PyMusic/logs/"+radio+"LogFileIdentify"+getNowDateTime(), 'w',1)
-        conn = MySQLdb.connect(host= "localhost",user="root", passwd="ulut123", db="pymusic",charset='utf8')
+	logfile = open(workspace+"PyMusic/logs/"+radio+"LogFileIdentify"+getNowDateTime(), 'w',1)
         
 	try:
         	segment = AudioSegment.from_mp3(filename)
@@ -85,17 +81,15 @@ if __name__ == "__main__":
 
         	for i in range(parts):
                 	part = segment[i*one_minute:(i+1)*one_minute]
-                	part.export("/home/monitor/Workspace/PyMusic/mp3/"+"%09d"%i+".mp3", format="mp3",bitrate="80k")
+                	part.export(workspace+"PyMusic/mp3/"+"%09d"%i+".mp3", format="mp3",bitrate="80k")
 
 
         	# Process files sorted by modified time
-        	files = sorted(glob('/home/monitor/Workspace/PyMusic/mp3/*.mp3'))
+        	files = sorted(glob(workspace+'PyMusic/mp3/*.mp3'))
         	print "Number of files: "+ str(len(files))
         	for filename in files:
                 	process_file(filename)
 	
 	except KeyboardInterrupt:
 		logfile.close()
-		conn.close()	
-		f.close()
 		exit()
