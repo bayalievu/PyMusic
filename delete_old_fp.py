@@ -6,6 +6,7 @@ def getNowDateTime():
 
 if __name__ == "__main__":
 	import datetime
+	import traceback
 	start_date = datetime.datetime.now() + datetime.timedelta(-30)
 	logfile = open("/home/monitor/Workspace/PyMusic/logs/delete_old_fp_log", 'a',1)
 	logfile.write(getNowDateTime()+'\n')
@@ -26,7 +27,9 @@ if __name__ == "__main__":
 		cursor.close()
 		conn.close()
 		exit()	
-	
+	except:
+		logfile.write(str(traceback.format_exc()))	
+		raise
 	logfile.write(getNowDateTime()+'\n')
 	logfile.close()
 	cursor.close()

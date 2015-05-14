@@ -5,6 +5,7 @@ import MySQLdb
 import os
 import time    
 import fp
+import datetime
 
 def reprocess(fid,decoded,date_played,time_played,radio,radio_id):
 
@@ -57,7 +58,6 @@ def getNowDateTime():
 	return time.strftime('%Y-%m-%d %H:%M:%S')	
 
 def melodyAddedYesterday():
-	import datetime
 	yesterday = datetime.datetime.now() + datetime.timedelta(-1)
 	yesterday = yesterday.strftime('%Y-%m-%d') + '%'
 	
@@ -76,18 +76,13 @@ def melodyAddedYesterday():
 	conn.close()
 
 if __name__ == "__main__":
- 	if len(sys.argv) < 3:
-                print "Usage: python reprocess.py startDate(YYYY-mm-DD) endDate(YYYY-mm-DD)"
-                exit()
-
+	import traceback
 	logfile = open(workspace+"PyMusic/logs/reprocess"+getNowDateTime(), 'w',1)
 	logfile.write(getNowDateTime()+'\n')
         last_time=0
 	recognized = 0
 	last_radio=None
 	last_date=None
-        startDate = sys.argv[1]
-	endDate = sys.argv[2]
 	
         ignored_songs =[]
         ignored_songs.append('TROWTHB14D0E92A254')
@@ -97,7 +92,9 @@ if __name__ == "__main__":
 
         try:
 		if melodyAddedYesterday():
-			cursor.execute("""SELECT * FROM fingerprint where status='N' and date_played>=%s and date_played<=%s order by radio_id,date_played,time_played""",(startDate,endDate))
+        		sevenDaysAgo = datetime.datetime.now() + datetime.timedelta(-7)
+        		sevenDaysAgo = sevenDaysAgo.strftime('%Y-%m-%d')
+			cursor.execute("""SELECT * FROM fingerprint where status='N' and date_played>=%s and date_played<=%s order by radio_id,date_played,time_played""",(sevenDaysAgo,getNowDate()))
 			logfile.write(cursor._executed+'\n')
                 	results = cursor.fetchall()
                 	for row in results:
@@ -121,6 +118,9 @@ if __name__ == "__main__":
 		logfile.close()
 		conn.close()	
 		exit()
+	except:
+		logfile.write(str(traceback.format_exc()))
+		raise
 	
 	logfile.write(getNowDateTime()+'\n')
 	logfile.write("Songs recognized: " + str(recognized)+'\n')

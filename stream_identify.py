@@ -7,6 +7,7 @@ import subprocess32
 import time    
 from glob import glob
 import fp
+import traceback
 
 codegen_path = os.path.abspath(workspace + "echoprint-codegen/echoprint-codegen")
 
@@ -132,5 +133,5 @@ if __name__ == "__main__":
 		f.close()
 		exit()
 	except:
-    		logfile.write(getNowDateTime()+":Unexpected error:" + sys.exc_info()[0])
+    		logfile.write(getNowDateTime()+":Unexpected error:" + str(traceback.format_exc()))
     		raise

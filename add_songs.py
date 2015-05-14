@@ -140,6 +140,7 @@ def updateUploadedMelodyError(error,mid,declined_status,added_status,track_id=No
         conn.close()
 	
 if __name__ == "__main__":
+	import traceback
 	# Open connection
 	connection = MySQLdb.connect(host= "localhost",user="root", passwd="ulut123", db="pymusic",charset='utf8')
 		
@@ -171,7 +172,7 @@ if __name__ == "__main__":
 	except cursor.Error, e:
                 logfile.write("Error %d: %s" % (e.args[0],e.args[1]))	
 	except:
-		logfile.write("Unexpected error:" + sys.exc_info()[0])	
+		logfile.write("Unexpected error:" + str(traceback.format_exc()))	
 
 	logfile.write(getNowDateTime()+":Number of melodies added:"+str(files_added)+'\n')
         cursor.close()
