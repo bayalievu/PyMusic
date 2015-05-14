@@ -96,7 +96,7 @@ if __name__ == "__main__":
                 exit()
 
 	ignored_songs =['TROWTHB14D0E92A254']
-	ignored_fp_radios = ['11','12','13']
+	ignored_fp_radios = ['10','11','12','13']
 
 	last=0
         radio = sys.argv[1]
