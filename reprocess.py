@@ -94,7 +94,7 @@ if __name__ == "__main__":
 		if melodyAddedYesterday():
         		sevenDaysAgo = datetime.datetime.now() + datetime.timedelta(-7)
         		sevenDaysAgo = sevenDaysAgo.strftime('%Y-%m-%d')
-			cursor.execute("""SELECT * FROM fingerprint where status='N' and date_played>=%s and date_played<=%s order by radio_id,date_played,time_played""",(sevenDaysAgo,getNowDate()))
+			cursor.execute("""SELECT * FROM fingerprint where status='N' and date_played>=%s and date_played<=%s and radio_id not in (11,12,13) order by radio_id,date_played,time_played""",(sevenDaysAgo,getNowDate()))
 			logfile.write(cursor._executed+'\n')
                 	results = cursor.fetchall()
                 	for row in results:

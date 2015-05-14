@@ -67,7 +67,7 @@ def process_file(filename):
 
 		db.close()	
 		return 0
-	elif result.TRID is None or result.TRID not in ignored_songs:
+	elif result.TRID is None or result.TRID not in ignored_songs and radio_id not in ignored_fp_radios:
 		#Insert unknown fingerprints with status 'N'
                 logfile.write(getNowDateTime()+":No match found for the file, inserting unknown melody to fingerprint table\n")
                 db.execute("""INSERT INTO fingerprint(fp,radio,date_played,time_played,time_identified,status,radio_id,track_id) VALUES (%s,%s,%s,%s,%s,%s,%s,%s)""",(decoded,radio,getNowDate(),getNowTime(),None,'N',radio_id,None))
@@ -95,8 +95,8 @@ if __name__ == "__main__":
                 print "Usage: python stream_identify.py radio radio_id stream"
                 exit()
 
-	ignored_songs =[]
-	ignored_songs.append('TROWTHB14D0E92A254')
+	ignored_songs =['TROWTHB14D0E92A254']
+	ignored_fp_radios = ['11','12','13']
 
 	last=0
         radio = sys.argv[1]
