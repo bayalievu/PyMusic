@@ -103,11 +103,12 @@ if __name__ == "__main__":
 	radio_id = sys.argv[2]
         stream = sys.argv[3]
 
-	logfile = open(workspace+"PyMusic/logs/radio"+radio+"LogStreamIdentify"+getNowDateTime(), 'w',1)
-   	url=urllib2.urlopen(stream)
-        conn = MySQLdb.connect(host= "localhost",user="root", passwd="ulut123", db="pymusic",charset='utf8')
-        
 	try:	
+   	
+		url=urllib2.urlopen(stream)
+		logfile = open(workspace+"PyMusic/logs/radio"+radio+"LogStreamIdentify"+getNowDateTime(), 'w',1)
+        	conn = MySQLdb.connect(host= "localhost",user="root", passwd="ulut123", db="pymusic",charset='utf8')
+        
 		while True:
                 	filename = workspace+"PyMusic/wavs/"+radio+getNowDateTime()+'.mp3'
                 	f=file(filename, 'wb')
