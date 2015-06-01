@@ -39,8 +39,6 @@ def process_file(filename):
 		logfile.write(getNowDateTime()+":No code is returned by codegen\n")
 		return -4
 
-	now_time = time.strftime('%H:%M:%S')
-	now_date = time.strftime('%Y-%m-%d')
 	db = conn.cursor()    	
 	track_id = None
 	
@@ -67,7 +65,7 @@ def process_file(filename):
 
 		db.close()	
 		return 0
-	elif result.TRID is None or result.TRID not in ignored_songs and radio_id not in ignored_fp_radios:
+	elif radio_id not in ignored_fp_radios and result.TRID is None:
 		#Insert unknown fingerprints with status 'N'
                 logfile.write(getNowDateTime()+":No match found for the file, inserting unknown melody to fingerprint table\n")
                 db.execute("""INSERT INTO fingerprint(fp,radio,date_played,time_played,time_identified,status,radio_id,track_id) VALUES (%s,%s,%s,%s,%s,%s,%s,%s)""",(decoded,radio,getNowDate(),getNowTime(),None,'N',radio_id,None))

@@ -52,11 +52,12 @@ def parse_json(c):
 
     	return data
 
-def process_file(path,c,mid,song):
+def process_file(path,c,mid,song,artist):
 	artists_id=getArtistsFromUploadedMelody(mid)
-	if artists_id is None:
-		return
-	
+	if (len(artists_id) ==0):
+		updateUploadedMelodyError("No artists found in uploaded_artist_melody table",mid,1,0)
+		return None;
+
 	#Get track id
 	code = parse_json(c[0])	
 	track_id =code["track_id"]
@@ -65,7 +66,7 @@ def process_file(path,c,mid,song):
 	db = conn.cursor()
 	try:
 		#Insert into melody table
-	   	db.execute("""INSERT INTO melody(track_id,artist,song,filename) VALUES (%s,%s,%s,%s)""",(track_id,"",song,path))
+	   	db.execute("""INSERT INTO melody(track_id,artist,song,filename) VALUES (%s,%s,%s,%s)""",(track_id,artist,song,path))
 	   	logfile.write("Inserted track to database "+track_id+'\n')
 	   	conn.commit()
 		insertArtistMelodyLink(artists_id,db.lastrowid)
@@ -149,7 +150,7 @@ if __name__ == "__main__":
 
 	cursor = connection.cursor()
 
-        sql = "select id,filename,song_name from uploaded_song where approved_flag = 1 and melody_added_flag = 0 and melody_declined_flag = 0"
+        sql = "select id,filename,song_name,singer_name from uploaded_song where approved_flag = 1 and melody_added_flag = 0 and melody_declined_flag = 0"
 	files_added = 0
         try:
                 cursor.execute(sql)
@@ -158,6 +159,7 @@ if __name__ == "__main__":
                         mid = row[0]
                         filename = row[1].strip()
 			song = row[2].strip()
+			artist = row[3].strip()
                 	c=codegen(filename)
                 	if c is None or len(c)==0 or "code" not in c[0]:
                         	logfile.write("No code is generated for: " + filename+'\n')
@@ -165,9 +167,10 @@ if __name__ == "__main__":
                         	continue
                 	#Add melody if it does not already exists
 			if not melodyExists(filename,c,mid):
-                        	track_id = process_file(filename,c,mid,song)
-				updateUploadedMelodyError("Melody successfully added:"+track_id,mid,0,1)
-				files_added = files_added + 1
+                        	track_id = process_file(filename,c,mid,song,artist)
+				if track_id is not None:
+					updateUploadedMelodyError("Melody successfully added:"+track_id,mid,0,1)
+					files_added = files_added + 1
 		
 	except cursor.Error, e:
                 logfile.write("Error %d: %s" % (e.args[0],e.args[1]))	
