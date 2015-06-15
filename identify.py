@@ -130,30 +130,14 @@ if __name__ == "__main__":
 		files = collections.deque(maxlen=number_of_parts)       
 		
 		while True:
-                	filename = workspace+"PyMusic/wavs/parts"+radio+getNowDateTime()+'.mp3'
-                	f=file(filename, 'wb')
-
-                	# Basically a timer
-                	t_start = datetime.now()
-                	t_end = datetime.now()
-                	t_end_old = t_end
-
-                	# Record in chunks until
-                	while t_end-t_start < timedelta(seconds=time_shift):
-                        	f.write(url.read(1024))
-                        	t_end = datetime.now()
-                	f.close()
+                        f = url.read(1024*10*time_shift))
 			
 			if (len(files) == number_of_parts):
-				files.append(f)
-				
 				merged_file = workspace+"PyMusic/wavs/merged"+radio+getNowDateTime()+'.mp3'
                         	big_file=file(merged_file, 'wb')
 				
 				for x in files:
-					t = open(os.path.abspath(x.name),'r')
-					big_file.write(t.read())
-					t.close()
+					big_file.write(x)
 				big_file.close()
 				
 				try:		
@@ -161,8 +145,7 @@ if __name__ == "__main__":
 				except IOError:
 					logfile.write(getNowDateTime()+":Unexpected error:" + str(traceback.format_exc()))
 				
-			else:
-				files.append(f)
+			files.append(f)
 			
 	except KeyboardInterrupt:
 		logfile.close()

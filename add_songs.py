@@ -177,7 +177,8 @@ if __name__ == "__main__":
 	except:
 		logfile.write("Unexpected error:" + str(traceback.format_exc()))	
 
-	logfile.write(getNowDateTime()+":Number of melodies added:"+str(files_added)+'\n')
+	if files_added > 0:
+		logfile.write(getNowDateTime()+":Number of melodies added:"+str(files_added)+'\n')
         cursor.close()
 	connection.close()	
 	logfile.close()
