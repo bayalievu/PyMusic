@@ -126,11 +126,11 @@ if __name__ == "__main__":
 	
 	try:	
 	   	url=urllib2.urlopen(stream)
-	
 		files = collections.deque(maxlen=number_of_parts)       
 		
 		while True:
-                        f = url.read(1024*10*time_shift))
+			#Read 5 seconds from the stream of 80kb/s speed
+                        f = url.read(1024*10*time_shift)
 			
 			if (len(files) == number_of_parts):
 				merged_file = workspace+"PyMusic/wavs/merged"+radio+getNowDateTime()+'.mp3'
