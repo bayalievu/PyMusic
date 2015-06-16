@@ -105,8 +105,6 @@ def getNowDateTime():
 if __name__ == "__main__":
  	import urllib2
 	import collections
-        from datetime import datetime
-        from datetime import timedelta
        
 	if len(sys.argv) < 4:
                 print "Usage: python test.py radio radio_id stream"
@@ -129,7 +127,7 @@ if __name__ == "__main__":
 		files = collections.deque(maxlen=number_of_parts)       
 		
 		while True:
-			#Read 5 seconds from the stream of 80kb/s speed
+			#Read 5 seconds from 80Kb/s(10KB/s) stream (This number should change if stream bandwidth changes)
                         f = url.read(1024*10*time_shift)
 			
 			if (len(files) == number_of_parts):
