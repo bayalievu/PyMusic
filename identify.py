@@ -34,7 +34,6 @@ def codegen(file, start=0, duration=part_duration):
 	return code
 
 def process_file(filename):
-
 	codes = codegen(filename)
 	if codes is None:
 		return -2
@@ -57,7 +56,7 @@ def process_file(filename):
                 #Melody is recognized
                 track_id = result.TRID
                 #Insert tracks only once
-                if ((last_known == 0) or (last_known != track_id)) and moreThanMatchesInLastTracks(track_id,1):
+                if ((last_known == 0) or (last_known != track_id)) and moreThanMatchesInLastTracks(track_id,1,radio):
                         last_known=track_id
 
                         try:
@@ -80,12 +79,15 @@ def process_file(filename):
 	
 	conn.close()
 
-def moreThanMatchesInLastTracks(track,match):
+def moreThanMatchesInLastTracks(track,match,radio):
 	c = 0
 	for x in last_tracks:
 		if x == track:
 			c = c + 1
-	return c > match
+	if radio == 'Tumar':
+		return c > match + 2
+	else:
+		return c > match
 
 def convertTimeToSeconds(t):
         (h, m, s) = str(t).split(':')
@@ -117,7 +119,7 @@ if __name__ == "__main__":
         radio = sys.argv[1]
 	radio_id = sys.argv[2]
         stream = sys.argv[3]
-        ignored_fp_radios = ['10','11','12','13']
+        ignored_fp_radios = ['10','11','12','13','14']
 	
 	logfile = open(workspace+"PyMusic/logs/radio"+radio+"TestIdentify"+getNowDateTime(), 'w',1)
 	last_tracks = collections.deque(maxlen=default_song_duration/time_shift)	

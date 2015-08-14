@@ -121,7 +121,6 @@ def melodyExists(filename,ci,mid):
 	decoded = fp.decode_code_string(c[0]["code"])
         result = fp.best_match_for_query(decoded)
         if result.TRID:
-		logfile.write(filename+" is already in the database\n")
 		updateUploadedMelodyError("Melody already exists in Database",mid,1,0,result.TRID)
         	return True
 	else:
